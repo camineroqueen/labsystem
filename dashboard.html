@@ -209,24 +209,28 @@
       color: #0f172a;
     }
 
-    /* CENTERED AUTO-FADING GREETING TOAST */
-    #welcomeToast {
+    /* CENTERED NOTIFICATIONS */
+    #welcomeToast, #customToast {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(15, 23, 42, 0.92);
+      background: rgba(15, 23, 42, 0.95);
       color: #ffffff;
       padding: 20px 35px;
       border-radius: 14px;
-      font-size: 1.2rem;
-      font-weight: 700;
+      font-size: 1.1rem;
+      font-weight: 600;
       box-shadow: 0 10px 30px rgba(0,0,0,0.25);
       z-index: 9999;
       display: none;
       text-align: center;
       pointer-events: none;
-      animation: fadeInOut 3s ease forwards;
+    }
+
+    .show-toast {
+      display: block !important;
+      animation: fadeInOut 3.5s ease forwards;
     }
 
     @keyframes fadeInOut {
@@ -239,8 +243,26 @@
 </head>
 <body>
 
-  <!-- CENTERED GREETING TOAST -->
+  <!-- CENTERED NOTIFICATIONS -->
   <div id="welcomeToast"></div>
+  <div id="customToast"></div>
+
+  <!-- CUSTOM CONFIRMATION MODAL -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+      <div class="modal-content border-0 shadow rounded-4 p-3">
+        <div class="modal-body text-center">
+          <div class="text-warning fs-1 mb-3"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <h5 class="fw-bold text-dark mb-2">Confirm Action</h5>
+          <p class="text-secondary small mb-4" id="confirmModalMessage">Are you sure you want to proceed?</p>
+          <div class="d-flex justify-content-center gap-2">
+            <button type="button" class="btn btn-light px-4 rounded-pill fw-semibold text-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger px-4 rounded-pill fw-semibold" id="confirmModalYesBtn">Yes, Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- LEFT SIDEBAR -->
   <aside class="sidebar">
@@ -263,17 +285,24 @@
       <li class="student-only" onclick="switchView('myaccount', this)">
         <a><i class="fa-solid fa-chart-pie"></i> My Dashboard</a>
       </li>
+
+      <!-- Admin Links -->
+      <li id="adminRequestsMenu" class="d-none admin-only" onclick="switchView('admin-requests', this)">
+        <a><i class="fa-solid fa-list-check"></i> Active Requests</a>
+      </li>
+      <li id="adminHistoryMenu" class="d-none admin-only" onclick="switchView('admin-history', this)">
+        <a><i class="fa-solid fa-clock-rotate-left"></i> Borrowing Logs</a>
+      </li>
+      <li id="adminUsersMenu" class="d-none admin-only" onclick="switchView('admin-users', this)">
+        <a><i class="fa-solid fa-users-gear"></i> Student Accounts</a>
+      </li>
+
       <li onclick="switchView('info', this)">
         <a><i class="fa-solid fa-circle-info"></i> Info</a>
       </li>
 
-      <!-- Admin Only Link -->
-      <li id="adminMenuBtn" class="d-none admin-only" onclick="switchView('admin', this)">
-        <a><i class="fa-solid fa-user-shield"></i> Admin Portal</a>
-      </li>
-
       <li style="margin-top: 40px;">
-        <a href="javascript:void(0)" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
+        <a href="javascript:void(0)" onclick="confirmLogout()"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a>
       </li>
     </ul>
   </aside>
@@ -322,9 +351,10 @@
     <!-- VIEW 2: TRACK REQUESTS (STUDENTS ONLY) -->
     <div id="view-requests" class="dashboard-view d-none">
       <div class="card border-0 shadow-sm p-4 rounded-4">
-        <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check text-primary me-2"></i>My Borrowed Requests</h5>
+        <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check text-primary me-2"></i>My Equipment Status & Return History</h5>
+        <p class="text-secondary mb-4">Track your current requests and return approved equipment when finished.</p>
         <div id="requestsListContainer">
-          <p class="text-muted">You have no active equipment requests yet. Browse equipment and click 'Borrow' to submit one!</p>
+          <!-- Rendered via JS -->
         </div>
       </div>
     </div>
@@ -360,11 +390,20 @@
       </div>
     </div>
 
-    <!-- VIEW 6: ADMIN PORTAL (ADMIN ONLY) -->
-    <div id="view-admin" class="dashboard-view d-none">
+    <!-- ADMIN VIEW A: ACTIVE BORROW REQUESTS -->
+    <div id="view-admin-requests" class="dashboard-view d-none">
       <div class="card border-0 shadow-sm p-4 rounded-4">
-        <h5 class="fw-bold mb-3"><i class="fa-solid fa-user-shield text-danger me-2"></i>Admin Inventory & Borrow Requests</h5>
-        <p class="text-secondary mb-4">Review incoming student equipment reservation requests and manage approvals.</p>
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold m-0"><i class="fa-solid fa-list-check text-danger me-2"></i>Pending & Active Requests</h5>
+          
+          <div class="topbar-search" style="max-width: 320px;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="requestsSearchInput" class="form-control" placeholder="Search student or item..." oninput="filterAdminRequests()">
+          </div>
+        </div>
+
+        <p class="text-secondary mb-4">Review incoming student equipment reservation requests and approve or reject them.</p>
         
         <div class="table-responsive">
           <table class="table table-hover align-middle">
@@ -373,7 +412,7 @@
                 <th>Student Name</th>
                 <th>Student ID</th>
                 <th>Equipment Requested</th>
-                <th>Date</th>
+                <th>Date Requested</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -386,7 +425,80 @@
       </div>
     </div>
 
+    <!-- ADMIN VIEW B: ENTIRE BORROWING LOGS -->
+    <div id="view-admin-history" class="dashboard-view d-none">
+      <div class="card border-0 shadow-sm p-4 rounded-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold m-0"><i class="fa-solid fa-clock-rotate-left text-success me-2"></i>Entire Borrowing History Logs</h5>
+          
+          <div class="topbar-search" style="max-width: 320px;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="historySearchInput" class="form-control" placeholder="Search history records..." oninput="filterAdminHistory()">
+          </div>
+        </div>
+        <p class="text-secondary mb-4">Complete master record of all approved, rejected, and successfully returned laboratory equipment.</p>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Student Name</th>
+                <th>Student ID</th>
+                <th>Equipment</th>
+                <th>Date</th>
+                <th>Return Status</th>
+              </tr>
+            </thead>
+            <tbody id="adminHistoryTable">
+              <!-- Rendered via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN VIEW C: STUDENT ACCOUNTS MANAGEMENT -->
+    <div id="view-admin-users" class="dashboard-view d-none">
+      <div class="card border-0 shadow-sm p-4 rounded-4">
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold m-0"><i class="fa-solid fa-users-gear text-primary me-2"></i>Student Accounts Directory</h5>
+          
+          <div class="d-flex align-items-center gap-2">
+            <div class="topbar-search" style="max-width: 280px;">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="usersSearchInput" class="form-control" placeholder="Search student ID or name..." oninput="filterRegisteredUsers()">
+            </div>
+            
+            <button class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-3" onclick="fetchRegisteredUsers()"><i class="fa-solid fa-rotate me-1"></i> Refresh</button>
+          </div>
+        </div>
+
+        <p class="text-secondary mb-4">View all registered student accounts and delete unnecessary test profiles on the fly.</p>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Official Name</th>
+                <th>Student ID</th>
+                <th>Email Address</th>
+                <th>System Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersTable">
+              <!-- Rendered via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </main>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
     const allEquipment = [
@@ -412,43 +524,40 @@
     ];
 
     let selectedCategory = 'All';
+    let cachedUsersList = [];
 
     document.addEventListener('DOMContentLoaded', () => {
       const currentUser = JSON.parse(localStorage.getItem('currentUser'));
       if (!currentUser) {
-        alert('Please log in first!');
+        showCustomToast('Please log in first!');
         window.location.href = 'index.html';
         return;
       }
 
-      const isAdmin = currentUser.studentId.toLowerCase() === 'admin';
+      const isAdmin = currentUser.studentId.toLowerCase() === 'admin' || currentUser.role === 'admin';
 
-      // Check for greeting message in sessionStorage
       const greetingMsg = sessionStorage.getItem('loginGreeting');
       if (greetingMsg) {
         const toast = document.getElementById('welcomeToast');
         toast.innerText = greetingMsg;
-        toast.style.display = 'block';
+        toast.classList.add('show-toast');
         sessionStorage.removeItem('loginGreeting');
       }
 
-      // Set Avatar and Profile Details
       const avatar = document.getElementById('userAvatar');
       if (avatar && currentUser.fullName) {
         avatar.innerText = currentUser.fullName.charAt(0).toUpperCase();
       }
 
       if (isAdmin) {
-        // ADMIN MODE: Hide student views, show admin portal automatically
         document.getElementById('sidebarRoleLabel').innerText = 'Administrator Portal';
         document.querySelectorAll('.student-only').forEach(el => el.classList.add('d-none'));
-        document.getElementById('adminMenuBtn').classList.remove('d-none');
+        document.getElementById('adminRequestsMenu').classList.remove('d-none');
+        document.getElementById('adminHistoryMenu').classList.remove('d-none');
+        document.getElementById('adminUsersMenu').classList.remove('d-none');
         
-        // Switch view to admin right away
-        const adminLi = document.getElementById('adminMenuBtn');
-        switchView('admin', adminLi);
+        switchView('admin-requests', document.getElementById('adminRequestsMenu'));
       } else {
-        // STUDENT MODE
         document.getElementById('profileName').innerText = currentUser.fullName;
         document.getElementById('profileId').innerText = currentUser.studentId;
         renderDashboardEquipment(allEquipment);
@@ -456,7 +565,6 @@
       }
     });
 
-    // Sidebar Navigation switcher
     function switchView(viewName, element) {
       document.querySelectorAll('.dashboard-view').forEach(el => el.classList.add('d-none'));
       document.querySelectorAll('.sidebar-menu li').forEach(el => el.classList.remove('active'));
@@ -470,13 +578,19 @@
         'rules': 'Rules & Safety',
         'myaccount': 'My Dashboard',
         'info': 'System Info',
-        'admin': 'Admin Portal'
+        'admin-requests': 'Active Borrow Requests',
+        'admin-history': 'Entire Borrowing History Logs',
+        'admin-users': 'Student Accounts Directory'
       };
       document.getElementById('pageTitle').innerText = titles[viewName];
       document.getElementById('searchWrapper').style.display = (viewName === 'browse') ? 'block' : 'none';
 
-      if (viewName === 'admin') {
+      if (viewName === 'admin-requests') {
         loadAdminRequests();
+      } else if (viewName === 'admin-history') {
+        filterAdminHistory();
+      } else if (viewName === 'admin-users') {
+        fetchRegisteredUsers();
       }
     }
 
@@ -549,50 +663,90 @@
       requests.push({ student: currentUser.fullName, id: currentUser.studentId, item: itemName, date: new Date().toLocaleDateString(), status: 'Pending Approval' });
       localStorage.setItem('labconnect_requests', JSON.stringify(requests));
 
-      alert(`Borrow request sent for "${itemName}"! Check 'Track Requests' for status.`);
+      showCustomToast(`Borrow request sent for "${itemName}"! Check 'Track Requests' for status.`);
       loadUserRequests();
     }
 
+    function showCustomToast(message) {
+      const toast = document.getElementById('customToast');
+      toast.innerText = message;
+      toast.className = ''; 
+      void toast.offsetWidth; 
+      toast.classList.add('show-toast');
+    }
+
+    // STUDENT PORTAL: TRACK REQUESTS & RETURN ITEM BUTTON
     function loadUserRequests() {
       const currentUser = JSON.parse(localStorage.getItem('currentUser'));
       const requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
       const userRequests = requests.filter(r => r.id === currentUser.studentId);
       const container = document.getElementById('requestsListContainer');
 
-      document.getElementById('profileBorrowCount').innerText = userRequests.length;
+      document.getElementById('profileBorrowCount').innerText = userRequests.filter(r => r.status === 'Approved' || r.status === 'Returned Item').length;
 
       if (userRequests.length === 0) {
         container.innerHTML = `<p class="text-muted">You have no active equipment requests yet. Browse equipment and click 'Borrow' to submit one!</p>`;
         return;
       }
 
-      container.innerHTML = `<ul class="list-group">` + userRequests.map(r => `
-        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-          <div>
-            <strong>${r.item}</strong><br>
-            <small class="text-muted">Requested on: ${r.date}</small>
-          </div>
-          <span class="badge ${r.status === 'Approved' ? 'bg-success' : r.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${r.status}</span>
-        </li>
-      `).join('') + `</ul>`;
+      container.innerHTML = `<ul class="list-group">` + requests.map((r, index) => {
+        if (r.id !== currentUser.studentId) return '';
+
+        let actionArea = `<span class="badge ${r.status === 'Approved' ? 'bg-success' : r.status === 'Returned Item' ? 'bg-secondary' : r.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${r.status}</span>`;
+
+        if (r.status === 'Approved') {
+          actionArea += ` <button class="btn btn-outline-primary btn-sm fw-bold ms-2" onclick="returnItem(${index})"><i class="fa-solid fa-arrow-rotate-left me-1"></i> Return Item</button>`;
+        }
+
+        return `
+          <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+            <div>
+              <strong>${r.item}</strong><br>
+              <small class="text-muted">Requested on: ${r.date}</small>
+            </div>
+            <div>${actionArea}</div>
+          </li>
+        `;
+      }).join('') + `</ul>`;
     }
 
+    // STUDENT MARKS ITEM AS RETURNED
+    function returnItem(index) {
+      let requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
+      requests[index].status = 'Returned Item';
+      localStorage.setItem('labconnect_requests', JSON.stringify(requests));
+      showCustomToast(`Item marked as returned! Thank you.`);
+      loadUserRequests();
+    }
+
+    // ADMIN: RENDER ACTIVE REQUESTS
     function loadAdminRequests() {
+      filterAdminRequests();
+    }
+
+    function filterAdminRequests() {
+      const query = document.getElementById('requestsSearchInput') ? document.getElementById('requestsSearchInput').value.toLowerCase().trim() : '';
       const requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
       const tableBody = document.getElementById('adminRequestsTable');
 
-      if (requests.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No student requests found.</td></tr>`;
+      const filtered = requests.filter(req => 
+        req.student.toLowerCase().includes(query) || 
+        req.id.toLowerCase().includes(query) || 
+        req.item.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No active student requests found.</td></tr>`;
         return;
       }
 
-      tableBody.innerHTML = requests.map((req, index) => `
+      tableBody.innerHTML = filtered.map((req, index) => `
         <tr>
           <td class="fw-bold text-dark">${req.student}</td>
           <td>${req.id}</td>
           <td>${req.item}</td>
           <td>${req.date}</td>
-          <td><span class="badge ${req.status === 'Approved' ? 'bg-success' : req.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${req.status}</span></td>
+          <td><span class="badge ${req.status === 'Approved' ? 'bg-success' : req.status === 'Returned Item' ? 'bg-secondary' : req.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${req.status}</span></td>
           <td>
             ${req.status === 'Pending Approval' ? `
               <button class="btn btn-success btn-sm fw-bold me-1" onclick="updateRequestStatus(${index}, 'Approved')">Approve</button>
@@ -609,14 +763,133 @@
       let requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
       requests[index].status = newStatus;
       localStorage.setItem('labconnect_requests', JSON.stringify(requests));
-      loadAdminRequests();
+      filterAdminRequests();
     }
 
-    function logout() {
-      if (confirm('Are you sure you want to log out?')) {
+    // ADMIN: ENTIRE BORROWING HISTORY LOGS
+    function filterAdminHistory() {
+      const query = document.getElementById('historySearchInput') ? document.getElementById('historySearchInput').value.toLowerCase().trim() : '';
+      const requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
+      const tableBody = document.getElementById('adminHistoryTable');
+
+      const filtered = requests.filter(req => 
+        req.student.toLowerCase().includes(query) || 
+        req.id.toLowerCase().includes(query) || 
+        req.item.toLowerCase().includes(query) ||
+        req.status.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No borrowing history logs found.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = filtered.map(req => `
+        <tr>
+          <td class="fw-bold text-dark">${req.student}</td>
+          <td>${req.id}</td>
+          <td>${req.item}</td>
+          <td>${req.date}</td>
+          <td><span class="badge ${req.status === 'Returned Item' ? 'bg-secondary' : req.status === 'Approved' ? 'bg-success' : req.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${req.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // FETCH REGISTERED USERS
+    async function fetchRegisteredUsers() {
+      const tableBody = document.getElementById('adminUsersTable');
+      tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">Loading users from database...</td></tr>`;
+
+      try {
+        const response = await fetch('/api/users');
+        cachedUsersList = await response.json();
+        filterRegisteredUsers();
+
+      } catch (err) {
+        console.error('Error fetching users:', err);
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">Failed to load user list from server.</td></tr>`;
+      }
+    }
+
+    function filterRegisteredUsers() {
+      const query = document.getElementById('usersSearchInput') ? document.getElementById('usersSearchInput').value.toLowerCase().trim() : '';
+      const tableBody = document.getElementById('adminUsersTable');
+
+      const filtered = cachedUsersList.filter(u => 
+        u.full_name.toLowerCase().includes(query) || 
+        u.student_id.toLowerCase().includes(query) || 
+        (u.email && u.email.toLowerCase().includes(query)) ||
+        u.role.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No matching registered accounts found.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = filtered.map(u => `
+        <tr>
+          <td class="fw-bold text-dark">${u.full_name}</td>
+          <td><span class="badge bg-light text-dark border">${u.student_id}</span></td>
+          <td>${u.email || '<span class="text-muted small">N/A</span>'}</td>
+          <td><span class="badge ${u.role === 'admin' ? 'bg-danger' : 'bg-primary'}">${u.role.toUpperCase()}</span></td>
+          <td>
+            ${u.role === 'admin' ? `
+              <button class="btn btn-secondary btn-sm" disabled style="font-size:0.75rem">Protected</button>
+            ` : `
+              <button class="btn btn-outline-danger btn-sm fw-semibold" onclick="confirmDeleteUser(${u.id}, '${u.full_name.replace(/'/g, "\\'")}')">
+                <i class="fa-solid fa-trash me-1"></i> Delete
+              </button>
+            `}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function confirmDeleteUser(userId, userName) {
+      const modalEl = document.getElementById('confirmModal');
+      const modalInstance = new bootstrap.Modal(modalEl);
+      
+      document.getElementById('confirmModalMessage').innerText = `Are you sure you want to permanently delete the account for "${userName}"?`;
+      
+      const yesBtn = document.getElementById('confirmModalYesBtn');
+      yesBtn.onclick = async function() {
+        try {
+          const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+          const data = await response.json();
+
+          modalInstance.hide();
+
+          if (!response.ok) {
+            showCustomToast(data.error || 'Failed to delete account.');
+            return;
+          }
+
+          showCustomToast(`Account for "${userName}" deleted successfully.`);
+          fetchRegisteredUsers();
+
+        } catch (err) {
+          console.error('Error deleting user:', err);
+          showCustomToast('Failed to connect to the server.');
+        }
+      };
+
+      modalInstance.show();
+    }
+
+    function confirmLogout() {
+      const modalEl = document.getElementById('confirmModal');
+      const modalInstance = new bootstrap.Modal(modalEl);
+      
+      document.getElementById('confirmModalMessage').innerText = 'Are you sure you want to log out?';
+      
+      const yesBtn = document.getElementById('confirmModalYesBtn');
+      yesBtn.onclick = function() {
         localStorage.removeItem('currentUser');
         window.location.href = 'index.html';
-      }
+      };
+
+      modalInstance.show();
     }
   </script>
 

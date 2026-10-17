@@ -93,11 +93,10 @@
     }
 
     .cat-firstaid { background-color: #ffebee; color: #c62828; }
-    .cat-chemistry { background-color: #e8f5e9; color: #1b5e20; }
+    .cat-chemistry { background-color: #e8f8e9; color: #1b5e20; }
     .cat-lab { background-color: #fff8e1; color: #f57f17; }
     .cat-nursing { background-color: #e3f2fd; color: #1565c0; }
 
-    /* BLUE NOTE ALERT STYLING */
     .note-alert {
       background-color: #e3f2fd;
       border: 1px solid #b8daff;
@@ -125,7 +124,7 @@
       border-radius: 16px;
       border: none;
       overflow: hidden;
-      background-color: #e3e4e6;
+      background-color: #ffffff;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
@@ -145,8 +144,37 @@
     }
 
     .custom-login-modal .modal-body {
-      padding: 28px 32px;
+      padding: 24px 32px;
       color: #4a4a4a;
+    }
+
+    /* ROLE SELECTOR TABS STYLING */
+    .role-toggle-container {
+      background-color: #f1f5f9;
+      padding: 4px;
+      border-radius: 10px;
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+
+    .role-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #64748b;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .role-btn.active {
+      background-color: #0d1b3e;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
     .custom-login-modal label {
@@ -215,9 +243,51 @@
     .custom-login-modal .btn-login-submit:hover {
       background-color: #162a5c;
     }
+
+    .input-error-msg {
+      color: #dc3545;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-top: 4px;
+      display: none;
+    }
+
+    /* CENTERED PROFESSIONAL TOAST NOTIFICATION */
+    #customToast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(15, 23, 42, 0.95);
+      color: #ffffff;
+      padding: 18px 32px;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      z-index: 99999;
+      display: none;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .show-toast {
+      display: block !important;
+      animation: fadeInOut 3.5s ease forwards;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translate(-50%, -40%); }
+      15% { opacity: 1; transform: translate(-50%, -50%); }
+      85% { opacity: 1; transform: translate(-50%, -50%); }
+      100% { opacity: 0; transform: translate(-50%, -60%); display: none; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- CENTERED PROFESSIONAL NOTIFICATION TOAST -->
+  <div id="customToast"></div>
 
   <!-- Top Bar -->
   <div class="d-flex justify-content-between align-items-center main-header">
@@ -301,25 +371,49 @@
         </div>
 
         <div class="modal-body">
+
+          <!-- ROLE SELECTOR TABS -->
+          <div class="role-toggle-container" id="roleToggleWrapper">
+            <button type="button" class="role-btn active" id="roleStudentBtn" onclick="setLoginRole('student')">
+              <i class="fa-solid fa-user-graduate me-1"></i> Student Portal
+            </button>
+            <button type="button" class="role-btn" id="roleAdminBtn" onclick="setLoginRole('admin')">
+              <i class="fa-solid fa-user-shield me-1"></i> Admin Portal
+            </button>
+          </div>
+
           <form id="authForm" onsubmit="handleAuth(event)">
             
+            <!-- FULL NAME FIELD -->
             <div class="mb-3 text-start d-none" id="fullNameGroup">
-              <label class="form-label">Full Name</label>
+              <label class="form-label">Official Full Name</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="fa-regular fa-user"></i></span>
                 <input type="text" id="fullNameInput" class="form-control" placeholder="e.g. Juan Dela Cruz">
               </div>
             </div>
 
-            <div class="mb-4 text-start">
-              <label class="form-label">Username or Student ID</label>
+            <!-- EMAIL ADDRESS FIELD -->
+            <div class="mb-3 text-start d-none" id="emailGroup">
+              <label class="form-label">School Email or Gmail</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="fa-regular fa-envelope"></i></span>
-                <input type="text" id="studentIdInput" class="form-control" placeholder="Enter your ID or username" required>
+                <input type="email" id="emailInput" class="form-control" placeholder="student@gmail.com">
               </div>
+              <div class="input-error-msg" id="emailError">Please enter a valid Gmail or school email address.</div>
             </div>
 
-            <!-- PASSWORD FIELD WITH SHOW/HIDE TOGGLE -->
+            <!-- STUDENT ID FIELD -->
+            <div class="mb-4 text-start">
+              <label class="form-label" id="usernameLabel">Student ID Number</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fa-solid fa-id-card"></i></span>
+                <input type="text" id="studentIdInput" class="form-control" placeholder="e.g. 2024-10892" required>
+              </div>
+              <div class="input-error-msg" id="studentIdError">Student ID or Email is already registered!</div>
+            </div>
+
+            <!-- PASSWORD FIELD -->
             <div class="mb-3 text-start">
               <label class="form-label">Password</label>
               <div class="input-group">
@@ -389,7 +483,28 @@
     };
 
     let currentAuthMode = 'login';
+    let selectedRole = 'student';
     let activeCategory = null;
+
+    function setLoginRole(role) {
+      selectedRole = role;
+      const studentBtn = document.getElementById('roleStudentBtn');
+      const adminBtn = document.getElementById('roleAdminBtn');
+      const usernameLabel = document.getElementById('usernameLabel');
+      const usernameInput = document.getElementById('studentIdInput');
+
+      if (role === 'admin') {
+        adminBtn.classList.add('active');
+        studentBtn.classList.remove('active');
+        usernameLabel.innerText = 'Admin Username or Email';
+        usernameInput.placeholder = 'e.g. admin or prof_santos';
+      } else {
+        studentBtn.classList.add('active');
+        adminBtn.classList.remove('active');
+        usernameLabel.innerText = 'Student ID Number';
+        usernameInput.placeholder = 'e.g. 2024-10892';
+      }
+    }
 
     function showCategory(categoryName) {
       document.getElementById('searchInput').value = "";
@@ -499,19 +614,29 @@
       const isRegister = mode === 'register';
 
       document.getElementById('modalHeaderTitle').innerHTML = isRegister 
-        ? `<i class="fa-solid fa-user-plus"></i> Create Account` 
+        ? `<i class="fa-solid fa-user-plus"></i> Create Student Account` 
         : `<i class="fa-regular fa-user"></i> LabConnect Login`;
 
       const fullNameGrp = document.getElementById('fullNameGroup');
       const fullNameInput = document.getElementById('fullNameInput');
+      const emailGrp = document.getElementById('emailGroup');
+      const emailInput = document.getElementById('emailInput');
+      const roleWrapper = document.getElementById('roleToggleWrapper');
       
       if (isRegister) {
         fullNameGrp.classList.remove('d-none');
         fullNameInput.setAttribute('required', 'required');
+        emailGrp.classList.remove('d-none');
+        emailInput.setAttribute('required', 'required');
+        roleWrapper.style.display = 'none'; 
       } else {
         fullNameGrp.classList.add('d-none');
         fullNameInput.removeAttribute('required');
         fullNameInput.value = '';
+        emailGrp.classList.add('d-none');
+        emailInput.removeAttribute('required');
+        emailInput.value = '';
+        roleWrapper.style.display = 'flex';
       }
 
       document.getElementById('loginExtras').style.display = isRegister ? 'none' : 'flex';
@@ -522,50 +647,96 @@
         : `Don't have an account? <a href="javascript:void(0)" class="forgot-link" onclick="toggleAuthMode('register')">Create Account</a>`;
     }
 
-    function handleAuth(event) {
+    function formatOfficialName(name) {
+      return name
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z\s.-]/g, '')
+        .split(' ')
+        .filter(word => word.length > 0)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+
+    // CENTERED TOAST FUNCTION
+    function showCustomToast(message) {
+      const toast = document.getElementById('customToast');
+      toast.innerText = message;
+      toast.className = ''; 
+      void toast.offsetWidth; 
+      toast.classList.add('show-toast');
+    }
+
+    async function handleAuth(event) {
       event.preventDefault();
 
       const studentId = document.getElementById('studentIdInput').value.trim();
       const password = document.getElementById('passwordInput').value.trim();
-      const fullName = document.getElementById('fullNameInput').value.trim();
+      const rawFullName = document.getElementById('fullNameInput').value;
+      const email = document.getElementById('emailInput').value.trim().toLowerCase();
 
-      let users = JSON.parse(localStorage.getItem('labconnect_users')) || [];
+      document.getElementById('emailError').style.display = 'none';
+      document.getElementById('studentIdError').style.display = 'none';
 
       if (currentAuthMode === 'register') {
-        const exists = users.some(u => u.studentId === studentId);
-        if (exists) {
-          alert('This Student ID or Username is already registered! Please log in.');
+        const validEmailPattern = /^[a-zA-Z0-9._%+-]+@(gmail\.com|[a-zA-Z0-9.-]+\.edu|\.ph)$/;
+        if (!validEmailPattern.test(email)) {
+          document.getElementById('emailError').style.display = 'block';
           return;
         }
 
-        const newUser = { fullName, studentId, password };
-        users.push(newUser);
-        localStorage.setItem('labconnect_users', JSON.stringify(users));
-        localStorage.setItem('currentUser', JSON.stringify({ fullName, studentId }));
+        const fullName = formatOfficialName(rawFullName);
+        if (fullName.length < 3) {
+          showCustomToast('Please enter a valid official full name.');
+          return;
+        }
 
-        sessionStorage.setItem('loginGreeting', `Welcome to LabConnect, ${fullName}! ✨`);
-        window.location.href = 'dashboard.html';
-      } else {
-        // Special case for admin login
-        if (studentId.toLowerCase() === 'admin' && password === 'admin') {
-          localStorage.setItem('currentUser', JSON.stringify({ fullName: 'Administrator', studentId: 'admin' }));
-          sessionStorage.setItem('loginGreeting', `Welcome back, Administrator! 🛡️`);
+        try {
+          const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ full_name: fullName, email, studentId, password })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            showCustomToast(data.error || 'Registration failed.');
+            return;
+          }
+
+          localStorage.setItem('currentUser', JSON.stringify({ fullName, studentId, role: 'student' }));
+          sessionStorage.setItem('loginGreeting', `Welcome to LabConnect, ${fullName}! ✨`);
           window.location.href = 'dashboard.html';
-          return;
+
+        } catch (err) {
+          console.error('Error connecting to server:', err);
+          showCustomToast('Could not connect to the server. Make sure your server is running!');
         }
 
-        // Strict validation check for student credentials
-        let foundUser = users.find(u => u.studentId === studentId && u.password === password);
-        
-        if (!foundUser) {
-          alert('Invalid Student ID/Username or Password. Please try again.');
-          return;
-        }
+      } else {
+        try {
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentId, password, role: selectedRole })
+          });
 
-        localStorage.setItem('currentUser', JSON.stringify({ fullName: foundUser.fullName, studentId: foundUser.studentId }));
-        
-        sessionStorage.setItem('loginGreeting', `Welcome back, ${foundUser.fullName}! 🚀`);
-        window.location.href = 'dashboard.html';
+          const data = await response.json();
+
+          if (!response.ok) {
+            showCustomToast(data.error || 'Login failed.');
+            return;
+          }
+
+          localStorage.setItem('currentUser', JSON.stringify(data.user));
+          sessionStorage.setItem('loginGreeting', `Welcome back, ${data.user.fullName}! 🚀`);
+          window.location.href = 'dashboard.html';
+
+        } catch (err) {
+          console.error('Error logging in:', err);
+          showCustomToast('Could not connect to the server.');
+        }
       }
     }
 
@@ -584,7 +755,7 @@
     function requestBorrow(itemName) {
       const currentUser = JSON.parse(localStorage.getItem('currentUser'));
       if (!currentUser) {
-        alert('Please log in or create an account first to request equipment!');
+        showCustomToast('Please log in or create an account first to request equipment!');
         openBorrowModal();
       } else {
         window.location.href = 'dashboard.html';
