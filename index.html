@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LabConnect - Find Your Lab Equipment</title>
   
-  <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   
   <style>
@@ -17,15 +15,8 @@
       color: #333333;
     }
 
-    .main-header {
-      padding: 25px 40px;
-    }
-
-    .brand-logo {
-      font-size: 1.8rem;
-      font-weight: 800;
-      color: #212529;
-    }
+    .main-header { padding: 25px 40px; }
+    .brand-logo { font-size: 1.8rem; font-weight: 800; color: #212529; }
 
     .btn-login {
       background-color: #e9ecef;
@@ -38,25 +29,10 @@
       cursor: pointer;
     }
 
-    .btn-login:hover {
-      background-color: #0d6efd;
-      color: #ffffff;
-    }
+    .btn-login:hover { background-color: #0d6efd; color: #ffffff; }
+    .hero-title { font-size: 2.8rem; font-weight: 800; color: #5c2c1a; margin-top: 15px; margin-bottom: 25px; }
 
-    .hero-title {
-      font-size: 2.8rem;
-      font-weight: 800;
-      color: #5c2c1a;
-      margin-top: 15px;
-      margin-bottom: 25px;
-    }
-
-    .search-container {
-      max-width: 650px;
-      margin: 0 auto 30px auto;
-      position: relative;
-    }
-
+    .search-container { max-width: 650px; margin: 0 auto 30px auto; position: relative; }
     .search-input {
       height: 55px;
       border-radius: 30px;
@@ -76,21 +52,9 @@
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .category-box:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    }
-
-    .category-box i {
-      font-size: 2.2rem;
-      margin-bottom: 10px;
-    }
-
-    .category-box h6 {
-      font-weight: 700;
-      margin: 0;
-      font-size: 0.95rem;
-    }
+    .category-box:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+    .category-box i { font-size: 2.2rem; margin-bottom: 10px; }
+    .category-box h6 { font-weight: 700; margin: 0; font-size: 0.95rem; }
 
     .cat-firstaid { background-color: #ffebee; color: #c62828; }
     .cat-chemistry { background-color: #e8f8e9; color: #1b5e20; }
@@ -108,17 +72,52 @@
       padding: 12px 20px;
     }
 
-    .equipment-card {
-      border: none;
-      border-radius: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      transition: transform 0.2s;
+    /* MATCHING DASHBOARD CARD STYLING */
+    .equipment-grid-card {
       background: #ffffff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      border: 1px solid #edf2f7;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      transition: transform 0.2s;
     }
 
-    .equipment-card:hover {
-      transform: translateY(-3px);
+    .equipment-grid-card:hover { transform: translateY(-2px); }
+
+    .item-icon-wrapper {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 12px;
     }
+
+    .icon-cyan { background-color: #e0f2fe; color: #0284c7; }
+    .icon-green { background-color: #dcfce7; color: #16a34a; }
+    .icon-purple { background-color: #f3e8ff; color: #9333ea; }
+    .icon-orange { background-color: #ffedd5; color: #ea580c; }
+    .icon-red { background-color: #ffebee; color: #c62828; }
+
+    .status-pill { font-size: 0.75rem; font-weight: 700; }
+
+    .btn-borrow-sm {
+      background-color: #2563eb;
+      color: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    .btn-borrow-sm:hover { background-color: #1d4ed8; color: #ffffff; }
 
     .custom-login-modal .modal-content {
       border-radius: 16px;
@@ -128,131 +127,26 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
-    .custom-login-modal .modal-header {
-      background-color: #0d1b3e;
-      color: #ffffff;
-      padding: 16px 24px;
-      border: none;
-    }
+    .custom-login-modal .modal-header { background-color: #0d1b3e; color: #ffffff; padding: 16px 24px; border: none; }
+    .custom-login-modal .modal-title { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .custom-login-modal .modal-body { padding: 24px 32px; color: #4a4a4a; }
 
-    .custom-login-modal .modal-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .role-toggle-container { background-color: #f1f5f9; padding: 4px; border-radius: 10px; display: flex; gap: 4px; margin-bottom: 20px; }
+    .role-btn { flex: 1; border: none; background: transparent; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; color: #64748b; transition: all 0.2s ease; cursor: pointer; }
+    .role-btn.active { background-color: #0d1b3e; color: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
 
-    .custom-login-modal .modal-body {
-      padding: 24px 32px;
-      color: #4a4a4a;
-    }
+    .custom-login-modal label { font-size: 0.9rem; font-weight: 600; color: #555555; margin-bottom: 6px; }
+    .custom-login-modal .input-group-text { background-color: #ffffff; border-right: none; border-color: #ccc; color: #777777; padding-left: 14px; }
+    .custom-login-modal .form-control { border-left: none; border-color: #ccc; padding: 10px 14px; font-size: 0.95rem; background-color: #ffffff; }
+    .custom-login-modal .form-control:focus { box-shadow: none; border-color: #ccc; }
+    .custom-login-modal .form-check-label { font-size: 0.88rem; color: #555; }
+    .custom-login-modal .forgot-link { font-size: 0.88rem; color: #212529; text-decoration: none; font-weight: 600; cursor: pointer; }
+    .custom-login-modal .forgot-link:hover { text-decoration: underline; }
+    .custom-login-modal .btn-cancel { background: transparent; border: none; color: #555555; font-weight: 600; padding: 8px 20px; }
+    .custom-login-modal .btn-login-submit { background-color: #0d1b3e; color: #ffffff; font-weight: 600; padding: 8px 26px; border-radius: 8px; border: none; transition: background-color 0.2s ease; }
+    .custom-login-modal .btn-login-submit:hover { background-color: #162a5c; }
+    .input-error-msg { color: #dc3545; font-size: 0.78rem; font-weight: 600; margin-top: 4px; display: none; }
 
-    /* ROLE SELECTOR TABS STYLING */
-    .role-toggle-container {
-      background-color: #f1f5f9;
-      padding: 4px;
-      border-radius: 10px;
-      display: flex;
-      gap: 4px;
-      margin-bottom: 20px;
-    }
-
-    .role-btn {
-      flex: 1;
-      border: none;
-      background: transparent;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #64748b;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-
-    .role-btn.active {
-      background-color: #0d1b3e;
-      color: #ffffff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    .custom-login-modal label {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #555555;
-      margin-bottom: 6px;
-    }
-
-    .custom-login-modal .input-group-text {
-      background-color: #ffffff;
-      border-right: none;
-      border-color: #ccc;
-      color: #777777;
-      padding-left: 14px;
-    }
-
-    .custom-login-modal .form-control {
-      border-left: none;
-      border-color: #ccc;
-      padding: 10px 14px;
-      font-size: 0.95rem;
-      background-color: #ffffff;
-    }
-
-    .custom-login-modal .form-control:focus {
-      box-shadow: none;
-      border-color: #ccc;
-    }
-
-    .custom-login-modal .form-check-label {
-      font-size: 0.88rem;
-      color: #555;
-    }
-
-    .custom-login-modal .forgot-link {
-      font-size: 0.88rem;
-      color: #212529;
-      text-decoration: none;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .custom-login-modal .forgot-link:hover {
-      text-decoration: underline;
-    }
-
-    .custom-login-modal .btn-cancel {
-      background: transparent;
-      border: none;
-      color: #555555;
-      font-weight: 600;
-      padding: 8px 20px;
-    }
-
-    .custom-login-modal .btn-login-submit {
-      background-color: #0d1b3e;
-      color: #ffffff;
-      font-weight: 600;
-      padding: 8px 26px;
-      border-radius: 8px;
-      border: none;
-      transition: background-color 0.2s ease;
-    }
-
-    .custom-login-modal .btn-login-submit:hover {
-      background-color: #162a5c;
-    }
-
-    .input-error-msg {
-      color: #dc3545;
-      font-size: 0.78rem;
-      font-weight: 600;
-      margin-top: 4px;
-      display: none;
-    }
-
-    /* CENTERED PROFESSIONAL TOAST NOTIFICATION */
     #customToast {
       position: fixed;
       top: 50%;
@@ -271,10 +165,7 @@
       pointer-events: none;
     }
 
-    .show-toast {
-      display: block !important;
-      animation: fadeInOut 3.5s ease forwards;
-    }
+    .show-toast { display: block !important; animation: fadeInOut 3.5s ease forwards; }
 
     @keyframes fadeInOut {
       0% { opacity: 0; transform: translate(-50%, -40%); }
@@ -286,25 +177,18 @@
 </head>
 <body>
 
-  <!-- CENTERED PROFESSIONAL NOTIFICATION TOAST -->
   <div id="customToast"></div>
 
-  <!-- Top Bar -->
   <div class="d-flex justify-content-between align-items-center main-header">
-    <div class="brand-logo">
-      LabConnect <span style="color: #ffc107;">✨</span>
-    </div>
-    
+    <div class="brand-logo">LabConnect <span style="color: #ffc107;">✨</span></div>
     <button type="button" class="btn-login" onclick="openBorrowModal()">
       <i class="fa-regular fa-user me-2"></i> Log In 
     </button>
   </div>
 
   <div class="container text-center">
-    
     <h1 class="hero-title">Find Your Lab Equipment</h1>
 
-    <!-- Search Bar -->
     <div class="search-container">
       <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by equipment name, kit ID, or course module..." oninput="filterFrontPageEquipment()">
       <button class="search-btn border-0 bg-transparent position-absolute end-0 top-50 translate-middle-y me-3 text-secondary" type="button">
@@ -312,7 +196,6 @@
       </button>
     </div>
 
-    <!-- CATEGORY BOXES -->
     <div class="row g-3 justify-content-center mx-auto mb-4" style="max-width: 900px;">
       <div class="col-6 col-sm-3">
         <div class="category-box cat-firstaid" onclick="showCategory('First Aid')">
@@ -340,39 +223,28 @@
       </div>
     </div>
 
-    <!-- NOTE BOX -->
     <div class="note-alert d-flex align-items-center justify-content-center gap-2">
       <i class="fa-solid fa-circle-info text-primary fs-5"></i>
       <span><strong>NOTE:</strong> You are free to browse! A student account is required only at checkout to track borrowing history for returning items.</span>
     </div>
 
-    <!-- EQUIPMENT SECTION -->
     <div id="equipmentSection" class="mt-4 text-start d-none">
       <hr class="my-4">
       <h4 class="fw-bold mb-3 text-dark" id="categoryTitle">Available Equipment</h4>
-      
-      <div class="row g-3" id="equipmentList">
-        <!-- Rendered via JS -->
-      </div>
+      <div class="row g-3" id="equipmentList"></div>
     </div>
-
   </div>
       
-  <!-- POP-UP LOGIN / SIGN UP MODAL -->
+  <!-- POP-UP LOGIN MODAL -->
   <div class="modal fade custom-login-modal" id="loginModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
       <div class="modal-content">
-        
         <div class="modal-header">
-          <div class="modal-title" id="modalHeaderTitle">
-            <i class="fa-regular fa-user"></i> LabConnect Login
-          </div>
+          <div class="modal-title" id="modalHeaderTitle"><i class="fa-regular fa-user"></i> LabConnect Login</div>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
         <div class="modal-body">
-
-          <!-- ROLE SELECTOR TABS -->
           <div class="role-toggle-container" id="roleToggleWrapper">
             <button type="button" class="role-btn active" id="roleStudentBtn" onclick="setLoginRole('student')">
               <i class="fa-solid fa-user-graduate me-1"></i> Student Portal
@@ -383,8 +255,6 @@
           </div>
 
           <form id="authForm" onsubmit="handleAuth(event)">
-            
-            <!-- FULL NAME FIELD -->
             <div class="mb-3 text-start d-none" id="fullNameGroup">
               <label class="form-label">Official Full Name</label>
               <div class="input-group">
@@ -393,7 +263,6 @@
               </div>
             </div>
 
-            <!-- EMAIL ADDRESS FIELD -->
             <div class="mb-3 text-start d-none" id="emailGroup">
               <label class="form-label">School Email or Gmail</label>
               <div class="input-group">
@@ -403,7 +272,6 @@
               <div class="input-error-msg" id="emailError">Please enter a valid Gmail or school email address.</div>
             </div>
 
-            <!-- STUDENT ID FIELD -->
             <div class="mb-4 text-start">
               <label class="form-label" id="usernameLabel">Student ID Number</label>
               <div class="input-group">
@@ -413,7 +281,6 @@
               <div class="input-error-msg" id="studentIdError">Student ID or Email is already registered!</div>
             </div>
 
-            <!-- PASSWORD FIELD -->
             <div class="mb-3 text-start">
               <label class="form-label">Password</label>
               <div class="input-group">
@@ -443,48 +310,60 @@
                 <a href="javascript:void(0)" class="forgot-link" onclick="toggleAuthMode('register')">Create Account</a>
               </small>
             </div>
-
           </form>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    const equipmentData = {
-      'First Aid': [
-        { name: 'First Aid Medical Kit (Complete Box)', stock: '10 units', desc: 'Bandages, antiseptic wipes, gauze, and tape' },
-        { name: 'Portable Ice Packs & Cold Compress', stock: '15 units', desc: 'Instant cold compress for sprains and swelling' },
-        { name: 'Clinic Stretcher (Folding Canvas)', stock: '4 units', desc: 'Folding stretcher for transport during emergencies' },
-        { name: 'Wheelchair (Standard Folding)', stock: '3 units', desc: 'Clinic wheelchair for student assistance' }
-      ],
-      'Chemistry': [
-        { name: 'Test Tube Set with Wooden Rack (6 pcs)', stock: '20 units', desc: 'Standard glass test tubes for mixing solutions' },
-        { name: 'Glass Beaker Set (250ml & 500ml)', stock: '18 units', desc: 'Multi-purpose borosilicate glass containers' },
-        { name: 'Erlenmeyer Flask (250ml)', stock: '14 units', desc: 'Cone-shaped liquid flask for titrations' },
-        { name: 'Graduated Cylinder (100ml)', stock: '12 units', desc: 'For precise liquid volume measurements' }
-      ],
-      'Laboratory': [
-        { name: 'Compound Microscope', stock: '8 units', desc: 'High precision optical microscope for slides' },
-        { name: 'Safety Goggles & Face Shield Set', stock: '25 units', desc: 'Protective eye and face gear for lab safety' },
-        { name: 'Triple Beam Balance Scale', stock: '6 units', desc: 'Mechanical balance for mass measurements' },
-        { name: 'Digital Vernier Caliper', stock: '10 units', desc: 'Precision tool for internal/external dimensions' }
-      ],
-      'Nursing': [
-        { name: 'Dual-Head Stethoscope', stock: '15 units', desc: 'Acoustic stethoscope for heart and lung sounds' },
-        { name: 'Manual Blood Pressure Monitor (BP Cuff)', stock: '10 units', desc: 'Aneroid BP cuff with bulb and gauge' },
-        { name: 'Digital Pulse Oximeter & Thermometer', stock: '12 units', desc: 'Fingertip oxygen monitor and digital thermometer' },
-        { name: 'Medical Penlight & Reflex Hammer', stock: '18 units', desc: 'Diagnostic kit for pupil and reflex checks' }
-      ]
-    };
-
+    let dbEquipment = [];
     let currentAuthMode = 'login';
     let selectedRole = 'student';
     let activeCategory = null;
+
+    async function loadLiveEquipment() {
+      try {
+        const response = await fetch('/api/equipment');
+        dbEquipment = await response.json();
+      } catch (err) {
+        console.error('Failed to load equipment from server:', err);
+      }
+    }
+
+    function renderCardHTML(item) {
+      let statusBadge = "";
+      let actionBtn = "";
+
+      if (item.stock > 0) {
+        statusBadge = `<span class="status-pill text-success"><i class="fa-solid fa-circle me-1"></i>Available (${item.stock} left)</span>`;
+        let safeName = item.name.replace(/'/g, "\\'");
+        actionBtn = `<button class="btn btn-borrow-sm" onclick="requestBorrow('${safeName}')">Borrow</button>`;
+      } else {
+        statusBadge = '<span class="status-pill text-secondary"><i class="fa-solid fa-circle me-1"></i>Unavailable</span>';
+        actionBtn = '<button class="btn btn-secondary btn-sm" disabled style="font-size:0.8rem">Unavailable</button>';
+      }
+
+      return `
+        <div class="col-md-6 col-lg-4">
+          <div class="equipment-grid-card">
+            <div>
+              <div class="item-icon-wrapper ${item.color_class || 'icon-cyan'}">
+                <i class="fa-solid ${item.icon || 'fa-flask'}"></i>
+              </div>
+              <h6 class="fw-bold text-dark mb-1">${item.name}</h6>
+              <p class="small text-muted mb-2">${item.description}</p>
+            </div>
+            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+              ${statusBadge}
+              ${actionBtn}
+            </div>
+          </div>
+        </div>
+      `;
+    }
 
     function setLoginRole(role) {
       selectedRole = role;
@@ -522,23 +401,10 @@
       title.innerText = categoryName + " Equipment Available";
       listContainer.innerHTML = "";
 
-      const items = equipmentData[categoryName] || [];
+      const items = dbEquipment.filter(item => item.category === categoryName);
 
       items.forEach(item => {
-        listContainer.innerHTML += `
-          <div class="col-md-6 col-lg-4">
-            <div class="card equipment-card p-3 h-100 d-flex flex-column justify-content-between">
-              <div>
-                <span class="badge bg-info text-dark mb-2">${item.stock} available</span>
-                <h6 class="fw-bold text-dark mb-1">${item.name}</h6>
-                <p class="small text-muted mb-3">${item.desc}</p>
-              </div>
-              <button class="btn btn-outline-primary btn-sm fw-bold w-100" onclick="requestBorrow('${item.name.replace(/'/g, "\\'")}')">
-                <i class="fa-solid fa-hand-holding me-1"></i> Request to Borrow
-              </button>
-            </div>
-          </div>
-        `;
+        listContainer.innerHTML += renderCardHTML(item);
       });
 
       section.classList.remove('d-none');
@@ -558,14 +424,9 @@
       }
 
       activeCategory = null;
-      let matches = [];
-      Object.keys(equipmentData).forEach(category => {
-        equipmentData[category].forEach(item => {
-          if (item.name.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query)) {
-            matches.push(item);
-          }
-        });
-      });
+      const matches = dbEquipment.filter(item => 
+        item.name.toLowerCase().includes(query) || item.description.toLowerCase().includes(query)
+      );
 
       title.innerText = `Results for "${query}" (${matches.length} found)`;
       listContainer.innerHTML = "";
@@ -574,20 +435,7 @@
         listContainer.innerHTML = `<div class="col-12 text-center text-muted py-4">No matching lab equipment found.</div>`;
       } else {
         matches.forEach(item => {
-          listContainer.innerHTML += `
-            <div class="col-md-6 col-lg-4">
-              <div class="card equipment-card p-3 h-100 d-flex flex-column justify-content-between">
-                <div>
-                  <span class="badge bg-info text-dark mb-2">${item.stock} available</span>
-                  <h6 class="fw-bold text-dark mb-1">${item.name}</h6>
-                  <p class="small text-muted mb-3">${item.desc}</p>
-                </div>
-                <button class="btn btn-outline-primary btn-sm fw-bold w-100" onclick="requestBorrow('${item.name.replace(/'/g, "\\'")}')">
-                  <i class="fa-solid fa-hand-holding me-1"></i> Request to Borrow
-                </button>
-              </div>
-            </div>
-          `;
+          listContainer.innerHTML += renderCardHTML(item);
         });
       }
 
@@ -597,7 +445,6 @@
     function togglePasswordVisibility() {
       const passwordInput = document.getElementById('passwordInput');
       const toggleEyeIcon = document.getElementById('toggleEyeIcon');
-      
       if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         toggleEyeIcon.classList.remove('fa-eye');
@@ -658,7 +505,6 @@
         .join(' ');
     }
 
-    // CENTERED TOAST FUNCTION
     function showCustomToast(message) {
       const toast = document.getElementById('customToast');
       toast.innerText = message;
@@ -710,7 +556,6 @@
           window.location.href = 'dashboard.html';
 
         } catch (err) {
-          console.error('Error connecting to server:', err);
           showCustomToast('Could not connect to the server. Make sure your server is running!');
         }
 
@@ -734,7 +579,6 @@
           window.location.href = 'dashboard.html';
 
         } catch (err) {
-          console.error('Error logging in:', err);
           showCustomToast('Could not connect to the server.');
         }
       }
@@ -771,8 +615,11 @@
       modalInstance.show();
     }
 
-    document.addEventListener('DOMContentLoaded', updateLoginUI);
+    document.addEventListener('DOMContentLoaded', () => {
+      loadLiveEquipment();
+      updateLoginUI();
+    });
   </script>
 
 </body>
-</html>
+</html> 

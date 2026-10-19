@@ -5,19 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LabConnect - Dashboard</title>
   
-  <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   
   <style>
     body {
       background-color: #f4f6f9;
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      overflow-x: hidden;
+      margin: 0; padding: 0; min-height: 100vh; overflow-x: hidden;
     }
 
     .sidebar {
@@ -26,110 +21,26 @@
       color: #ffffff;
       min-height: 100vh;
       position: fixed;
-      top: 0;
-      left: 0;
-      display: flex;
-      flex-direction: column;
+      top: 0; left: 0;
+      display: flex; flex-direction: column;
       z-index: 100;
     }
 
-    .sidebar-brand {
-      padding: 24px 20px;
-      font-size: 1.4rem;
-      font-weight: 800;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
+    .sidebar-brand { padding: 24px 20px; font-size: 1.4rem; font-weight: 800; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+    .sidebar-brand small { display: block; font-size: 0.72rem; font-weight: 400; color: #94a3b8; }
+    .sidebar-menu { list-style: none; padding: 15px 0; margin: 0; }
+    .sidebar-menu li a { display: flex; align-items: center; padding: 12px 24px; color: #a0aec0; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: all 0.2s ease; cursor: pointer; }
+    .sidebar-menu li a:hover, .sidebar-menu li.active a { color: #ffffff; background-color: rgba(255, 255, 255, 0.08); border-left: 4px solid #3b82f6; }
+    .sidebar-menu li a i { width: 28px; font-size: 1rem; }
 
-    .sidebar-brand small {
-      display: block;
-      font-size: 0.72rem;
-      font-weight: 400;
-      color: #94a3b8;
-    }
+    .main-content { margin-left: 250px; padding: 24px 32px; }
+    .dashboard-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+    .topbar-search { position: relative; max-width: 380px; width: 100%; }
+    .topbar-search input { border-radius: 20px; padding-left: 40px; background-color: #ffffff; border: 1px solid #e2e8f0; font-size: 0.88rem; height: 42px; }
+    .topbar-search i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
 
-    .sidebar-menu {
-      list-style: none;
-      padding: 15px 0;
-      margin: 0;
-    }
-
-    .sidebar-menu li a {
-      display: flex;
-      align-items: center;
-      padding: 12px 24px;
-      color: #a0aec0;
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 600;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-
-    .sidebar-menu li a:hover,
-    .sidebar-menu li.active a {
-      color: #ffffff;
-      background-color: rgba(255, 255, 255, 0.08);
-      border-left: 4px solid #3b82f6;
-    }
-
-    .sidebar-menu li a i {
-      width: 28px;
-      font-size: 1rem;
-    }
-
-    .main-content {
-      margin-left: 250px;
-      padding: 24px 32px;
-    }
-
-    .dashboard-topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 28px;
-    }
-
-    .topbar-search {
-      position: relative;
-      max-width: 380px;
-      width: 100%;
-    }
-
-    .topbar-search input {
-      border-radius: 20px;
-      padding-left: 40px;
-      background-color: #ffffff;
-      border: 1px solid #e2e8f0;
-      font-size: 0.88rem;
-      height: 42px;
-    }
-
-    .topbar-search i {
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #94a3b8;
-    }
-
-    .user-profile-badge {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .profile-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background-color: #3b82f6;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.9rem;
-    }
+    .user-profile-badge { display: flex; align-items: center; gap: 12px; }
+    .profile-avatar { width: 38px; height: 38px; border-radius: 50%; background-color: #3b82f6; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; }
 
     .equipment-grid-card {
       background: #ffffff;
@@ -137,27 +48,12 @@
       padding: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
       border: 1px solid #edf2f7;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 100%;
-      transition: transform 0.2s;
+      display: flex; flex-direction: column; justify-content: space-between;
+      height: 100%; transition: transform 0.2s;
     }
 
-    .equipment-grid-card:hover {
-      transform: translateY(-2px);
-    }
-
-    .item-icon-wrapper {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3rem;
-      margin-bottom: 12px;
-    }
+    .equipment-grid-card:hover { transform: translateY(-2px); }
+    .item-icon-wrapper { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 12px; }
 
     .icon-cyan { background-color: #e0f2fe; color: #0284c7; }
     .icon-green { background-color: #dcfce7; color: #16a34a; }
@@ -165,73 +61,22 @@
     .icon-orange { background-color: #ffedd5; color: #ea580c; }
     .icon-red { background-color: #ffebee; color: #c62828; }
 
-    .status-pill {
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
+    .status-pill { font-size: 0.75rem; font-weight: 700; }
+    .btn-borrow-sm { background-color: #2563eb; color: #ffffff; font-size: 0.8rem; font-weight: 600; padding: 5px 14px; border-radius: 6px; border: none; }
+    .btn-borrow-sm:hover { background-color: #1d4ed8; color: #ffffff; }
 
-    .btn-borrow-sm {
-      background-color: #2563eb;
-      color: #ffffff;
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 5px 14px;
-      border-radius: 6px;
-      border: none;
-    }
+    .filter-panel { background: #ffffff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #edf2f7; }
+    .category-filter-item { padding: 8px 12px; border-radius: 8px; color: #475569; font-weight: 600; font-size: 0.88rem; cursor: pointer; transition: background 0.2s; }
+    .category-filter-item:hover, .category-filter-item.active { background-color: #f1f5f9; color: #0f172a; }
 
-    .btn-borrow-sm:hover {
-      background-color: #1d4ed8;
-      color: #ffffff;
-    }
-
-    .filter-panel {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      border: 1px solid #edf2f7;
-    }
-
-    .category-filter-item {
-      padding: 8px 12px;
-      border-radius: 8px;
-      color: #475569;
-      font-weight: 600;
-      font-size: 0.88rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .category-filter-item:hover,
-    .category-filter-item.active {
-      background-color: #f1f5f9;
-      color: #0f172a;
-    }
-
-    /* CENTERED NOTIFICATIONS */
     #welcomeToast, #customToast {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(15, 23, 42, 0.95);
-      color: #ffffff;
-      padding: 20px 35px;
-      border-radius: 14px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      z-index: 9999;
-      display: none;
-      text-align: center;
-      pointer-events: none;
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(15, 23, 42, 0.95); color: #ffffff;
+      padding: 20px 35px; border-radius: 14px; font-size: 1.1rem; font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 9999; display: none; text-align: center; pointer-events: none;
     }
 
-    .show-toast {
-      display: block !important;
-      animation: fadeInOut 3.5s ease forwards;
-    }
+    .show-toast { display: block !important; animation: fadeInOut 3.5s ease forwards; }
 
     @keyframes fadeInOut {
       0% { opacity: 0; transform: translate(-50%, -40%); }
@@ -243,11 +88,9 @@
 </head>
 <body>
 
-  <!-- CENTERED NOTIFICATIONS -->
   <div id="welcomeToast"></div>
   <div id="customToast"></div>
 
-  <!-- CUSTOM CONFIRMATION MODAL -->
   <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
       <div class="modal-content border-0 shadow rounded-4 p-3">
@@ -264,7 +107,6 @@
     </div>
   </div>
 
-  <!-- LEFT SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-brand">
       LabConnect ✨
@@ -272,7 +114,6 @@
     </div>
 
     <ul class="sidebar-menu" id="sidebarMenu">
-      <!-- Student Links -->
       <li class="active student-only" onclick="switchView('browse', this)">
         <a><i class="fa-solid fa-flask"></i> Browse Equipment</a>
       </li>
@@ -286,9 +127,11 @@
         <a><i class="fa-solid fa-chart-pie"></i> My Dashboard</a>
       </li>
 
-      <!-- Admin Links -->
       <li id="adminRequestsMenu" class="d-none admin-only" onclick="switchView('admin-requests', this)">
         <a><i class="fa-solid fa-list-check"></i> Active Requests</a>
+      </li>
+      <li id="adminInventoryMenu" class="d-none admin-only" onclick="switchView('admin-inventory', this)">
+        <a><i class="fa-solid fa-boxes-stacked"></i> Manage Inventory</a>
       </li>
       <li id="adminHistoryMenu" class="d-none admin-only" onclick="switchView('admin-history', this)">
         <a><i class="fa-solid fa-clock-rotate-left"></i> Borrowing Logs</a>
@@ -307,10 +150,8 @@
     </ul>
   </aside>
 
-  <!-- MAIN CONTENT AREA -->
   <main class="main-content">
     
-    <!-- TOPBAR -->
     <div class="dashboard-topbar">
       <h4 class="fw-bold text-dark m-0" id="pageTitle">Browse Equipment</h4>
 
@@ -327,7 +168,7 @@
       </div>
     </div>
 
-    <!-- VIEW 1: BROWSE EQUIPMENT (STUDENTS ONLY) -->
+    <!-- STUDENT BROWSE -->
     <div id="view-browse" class="dashboard-view">
       <div class="row g-4">
         <div class="col-lg-9">
@@ -348,18 +189,16 @@
       </div>
     </div>
 
-    <!-- VIEW 2: TRACK REQUESTS (STUDENTS ONLY) -->
+    <!-- STUDENT TRACK REQUESTS -->
     <div id="view-requests" class="dashboard-view d-none">
       <div class="card border-0 shadow-sm p-4 rounded-4">
         <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check text-primary me-2"></i>My Equipment Status & Return History</h5>
         <p class="text-secondary mb-4">Track your current requests and return approved equipment when finished.</p>
-        <div id="requestsListContainer">
-          <!-- Rendered via JS -->
-        </div>
+        <div id="requestsListContainer"></div>
       </div>
     </div>
 
-    <!-- VIEW 3: RULES & SAFETY -->
+    <!-- RULES -->
     <div id="view-rules" class="dashboard-view d-none">
       <div class="card border-0 shadow-sm p-4 rounded-4">
         <h5 class="fw-bold mb-3"><i class="fa-solid fa-shield-halved text-success me-2"></i>Laboratory Safety Guidelines</h5>
@@ -372,7 +211,7 @@
       </div>
     </div>
 
-    <!-- VIEW 4: MY DASHBOARD / PROFILE (STUDENTS ONLY) -->
+    <!-- MY DASHBOARD -->
     <div id="view-myaccount" class="dashboard-view d-none">
       <div class="card border-0 shadow-sm p-4 rounded-4" style="max-width: 600px;">
         <h5 class="fw-bold mb-4"><i class="fa-solid fa-chart-pie text-info me-2"></i>Student Account Info</h5>
@@ -382,7 +221,7 @@
       </div>
     </div>
 
-    <!-- VIEW 5: INFO -->
+    <!-- INFO -->
     <div id="view-info" class="dashboard-view d-none">
       <div class="card border-0 shadow-sm p-4 rounded-4">
         <h5 class="fw-bold mb-3"><i class="fa-solid fa-circle-info text-warning me-2"></i>About LabConnect</h5>
@@ -390,21 +229,17 @@
       </div>
     </div>
 
-    <!-- ADMIN VIEW A: ACTIVE BORROW REQUESTS -->
+    <!-- ADMIN ACTIVE REQUESTS -->
     <div id="view-admin-requests" class="dashboard-view d-none">
       <div class="card border-0 shadow-sm p-4 rounded-4">
-        
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="fw-bold m-0"><i class="fa-solid fa-list-check text-danger me-2"></i>Pending & Active Requests</h5>
-          
           <div class="topbar-search" style="max-width: 320px;">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" id="requestsSearchInput" class="form-control" placeholder="Search student or item..." oninput="filterAdminRequests()">
           </div>
         </div>
-
         <p class="text-secondary mb-4">Review incoming student equipment reservation requests and approve or reject them.</p>
-        
         <div class="table-responsive">
           <table class="table table-hover align-middle">
             <thead class="table-light">
@@ -417,20 +252,43 @@
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="adminRequestsTable">
-              <!-- Rendered via JavaScript -->
-            </tbody>
+            <tbody id="adminRequestsTable"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ADMIN VIEW B: ENTIRE BORROWING LOGS -->
+    <!-- ADMIN REAL-TIME INVENTORY MANAGEMENT -->
+    <div id="view-admin-inventory" class="dashboard-view d-none">
+      <div class="card border-0 shadow-sm p-4 rounded-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold m-0"><i class="fa-solid fa-boxes-stacked text-warning me-2"></i>Real-Time Inventory Control</h5>
+          <button class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-3" onclick="loadLiveInventory()"><i class="fa-solid fa-rotate me-1"></i> Refresh Stock</button>
+        </div>
+        <p class="text-secondary mb-4">Edit equipment stock quantities directly in SQLite. Items with 0 units will automatically show as "Unavailable".</p>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Item Name</th>
+                <th>Category</th>
+                <th>Current Stock</th>
+                <th>Live Status</th>
+                <th>Update Stock</th>
+              </tr>
+            </thead>
+            <tbody id="adminInventoryTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN HISTORY LOGS -->
     <div id="view-admin-history" class="dashboard-view d-none">
       <div class="card border-0 shadow-sm p-4 rounded-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="fw-bold m-0"><i class="fa-solid fa-clock-rotate-left text-success me-2"></i>Entire Borrowing History Logs</h5>
-          
           <div class="topbar-search" style="max-width: 320px;">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" id="historySearchInput" class="form-control" placeholder="Search history records..." oninput="filterAdminHistory()">
@@ -449,33 +307,26 @@
                 <th>Return Status</th>
               </tr>
             </thead>
-            <tbody id="adminHistoryTable">
-              <!-- Rendered via JavaScript -->
-            </tbody>
+            <tbody id="adminHistoryTable"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ADMIN VIEW C: STUDENT ACCOUNTS MANAGEMENT -->
+    <!-- ADMIN USERS DIRECTORY -->
     <div id="view-admin-users" class="dashboard-view d-none">
       <div class="card border-0 shadow-sm p-4 rounded-4">
-        
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="fw-bold m-0"><i class="fa-solid fa-users-gear text-primary me-2"></i>Student Accounts Directory</h5>
-          
           <div class="d-flex align-items-center gap-2">
             <div class="topbar-search" style="max-width: 280px;">
               <i class="fa-solid fa-magnifying-glass"></i>
               <input type="text" id="usersSearchInput" class="form-control" placeholder="Search student ID or name..." oninput="filterRegisteredUsers()">
             </div>
-            
             <button class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-3" onclick="fetchRegisteredUsers()"><i class="fa-solid fa-rotate me-1"></i> Refresh</button>
           </div>
         </div>
-
         <p class="text-secondary mb-4">View all registered student accounts and delete unnecessary test profiles on the fly.</p>
-
         <div class="table-responsive">
           <table class="table table-hover align-middle">
             <thead class="table-light">
@@ -487,9 +338,7 @@
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="adminUsersTable">
-              <!-- Rendered via JavaScript -->
-            </tbody>
+            <tbody id="adminUsersTable"></tbody>
           </table>
         </div>
       </div>
@@ -497,34 +346,22 @@
 
   </main>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    const allEquipment = [
-      { name: 'First Aid Medical Kit', category: 'First Aid', stock: 'Available', icon: 'fa-kit-medical', colorClass: 'icon-red', desc: 'Bandages, antiseptic & gauze' },
-      { name: 'Portable Instant Ice Packs', category: 'First Aid', stock: 'Available', icon: 'fa-snowflake', colorClass: 'icon-cyan', desc: 'Cold compress for sprains/bumps' },
-      { name: 'Folding Clinic Stretcher', category: 'First Aid', stock: 'Available', icon: 'fa-bed-pulse', colorClass: 'icon-purple', desc: 'Emergency student transport' },
-      { name: 'Standard Clinic Wheelchair', category: 'First Aid', stock: 'Borrowed', icon: 'fa-wheelchair', colorClass: 'icon-orange', desc: 'Mobility assistance wheelchair' },
-      
-      { name: 'Test Tube Set with Wooden Rack', category: 'Chemistry', stock: 'Available', icon: 'fa-vial', colorClass: 'icon-green', desc: 'Standard glass test tubes' },
-      { name: 'Glass Beaker Set (250ml & 500ml)', category: 'Chemistry', stock: 'Available', icon: 'fa-glass-water', colorClass: 'icon-green', desc: 'Borosilicate glassware' },
-      { name: 'Erlenmeyer Flask (250ml)', category: 'Chemistry', stock: 'Available', icon: 'fa-flask', colorClass: 'icon-green', desc: 'Cone flask for titrations' },
-      { name: 'Graduated Cylinder (100ml)', category: 'Chemistry', stock: 'Unavailable', icon: 'fa-flask-vial', colorClass: 'icon-purple', desc: 'Volume measurement cylinder' },
-
-      { name: 'Compound Microscope', category: 'Laboratory', stock: 'Available', icon: 'fa-microscope', colorClass: 'icon-cyan', desc: 'High precision optics' },
-      { name: 'Safety Goggles & Face Shield', category: 'Laboratory', stock: 'Available', icon: 'fa-glasses', colorClass: 'icon-purple', desc: 'Eye & face safety gear' },
-      { name: 'Triple Beam Balance Scale', category: 'Laboratory', stock: 'Available', icon: 'fa-scale-balanced', colorClass: 'icon-purple', desc: 'Mechanical mass scale' },
-      { name: 'Digital Vernier Caliper', category: 'Laboratory', stock: 'Borrowed', icon: 'fa-ruler-combined', colorClass: 'icon-orange', desc: 'Precision dimension tool' },
-
-      { name: 'Dual-Head Stethoscope', category: 'Nursing', stock: 'Available', icon: 'fa-stethoscope', colorClass: 'icon-orange', desc: 'Heart and lung sound check' },
-      { name: 'Manual Blood Pressure Monitor', category: 'Nursing', stock: 'Available', icon: 'fa-heart-pulse', colorClass: 'icon-orange', desc: 'BP cuff with gauge' },
-      { name: 'Digital Pulse Oximeter & Thermometer', category: 'Nursing', stock: 'Available', icon: 'fa-temperature-three-quarters', colorClass: 'icon-orange', desc: 'Oxygen & temp monitor' },
-      { name: 'Medical Penlight & Reflex Hammer', category: 'Nursing', stock: 'Unavailable', icon: 'fa-hand-holding-medical', colorClass: 'icon-purple', desc: 'Diagnostic reflex kit' }
-    ];
-
+    let dbEquipmentList = [];
     let selectedCategory = 'All';
     let cachedUsersList = [];
+
+    async function fetchLiveEquipment() {
+      try {
+        const response = await fetch('/api/equipment');
+        dbEquipmentList = await response.json();
+        renderDashboardEquipment(dbEquipmentList);
+      } catch (err) {
+        console.error('Failed to load equipment:', err);
+      }
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -553,6 +390,7 @@
         document.getElementById('sidebarRoleLabel').innerText = 'Administrator Portal';
         document.querySelectorAll('.student-only').forEach(el => el.classList.add('d-none'));
         document.getElementById('adminRequestsMenu').classList.remove('d-none');
+        document.getElementById('adminInventoryMenu').classList.remove('d-none');
         document.getElementById('adminHistoryMenu').classList.remove('d-none');
         document.getElementById('adminUsersMenu').classList.remove('d-none');
         
@@ -560,7 +398,7 @@
       } else {
         document.getElementById('profileName').innerText = currentUser.fullName;
         document.getElementById('profileId').innerText = currentUser.studentId;
-        renderDashboardEquipment(allEquipment);
+        fetchLiveEquipment();
         loadUserRequests();
       }
     });
@@ -579,6 +417,7 @@
         'myaccount': 'My Dashboard',
         'info': 'System Info',
         'admin-requests': 'Active Borrow Requests',
+        'admin-inventory': 'Manage Lab Inventory',
         'admin-history': 'Entire Borrowing History Logs',
         'admin-users': 'Student Accounts Directory'
       };
@@ -587,6 +426,8 @@
 
       if (viewName === 'admin-requests') {
         loadAdminRequests();
+      } else if (viewName === 'admin-inventory') {
+        loadLiveInventory();
       } else if (viewName === 'admin-history') {
         filterAdminHistory();
       } else if (viewName === 'admin-users') {
@@ -607,27 +448,24 @@
         let statusBadge = "";
         let actionBtn = "";
 
-        if (item.stock === 'Available') {
-            statusBadge = '<span class="status-pill text-success"><i class="fa-solid fa-circle me-1"></i>Available</span>';
-            let safeName = item.name.replace(/'/g, "\\'");
-            actionBtn = `<button class="btn btn-borrow-sm" onclick="borrowItem('${safeName}')">Borrow</button>`;
-        } else if (item.stock === 'Borrowed') {
-            statusBadge = '<span class="status-pill text-warning">Borrowed</span>';
-            actionBtn = '<button class="btn btn-secondary btn-sm" disabled style="font-size:0.8rem">Borrowed</button>';
+        if (item.stock > 0) {
+          statusBadge = `<span class="status-pill text-success"><i class="fa-solid fa-circle me-1"></i>Available (${item.stock} left)</span>`;
+          let safeName = item.name.replace(/'/g, "\\'");
+          actionBtn = `<button class="btn btn-borrow-sm" onclick="borrowItem('${safeName}')">Borrow</button>`;
         } else {
-            statusBadge = '<span class="status-pill text-secondary"><i class="fa-solid fa-circle me-1"></i>Unavailable</span>';
-            actionBtn = '<button class="btn btn-secondary btn-sm" disabled style="font-size:0.8rem">Unavailable</button>';
+          statusBadge = '<span class="status-pill text-secondary"><i class="fa-solid fa-circle me-1"></i>Unavailable</span>';
+          actionBtn = '<button class="btn btn-secondary btn-sm" disabled style="font-size:0.8rem">Unavailable</button>';
         }
 
         listContainer.innerHTML += `
           <div class="col-md-6 col-xl-4">
             <div class="equipment-grid-card">
               <div>
-                <div class="item-icon-wrapper ${item.colorClass}">
-                  <i class="fa-solid ${item.icon}"></i>
+                <div class="item-icon-wrapper ${item.color_class || 'icon-cyan'}">
+                  <i class="fa-solid ${item.icon || 'fa-flask'}"></i>
                 </div>
                 <h6 class="fw-bold text-dark mb-1">${item.name}</h6>
-                <p class="small text-muted mb-2">${item.desc}</p>
+                <p class="small text-muted mb-2">${item.description}</p>
               </div>
               <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                 ${statusBadge}
@@ -641,8 +479,8 @@
 
     function filterDashboardEquipment() {
       const query = document.getElementById('dashboardSearchInput').value.toLowerCase().trim();
-      const filtered = allEquipment.filter(item => {
-        const matchesSearch = item.name.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
+      const filtered = dbEquipmentList.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(query) || item.description.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
         const matchesCat = (selectedCategory === 'All' || item.category === selectedCategory);
         return matchesSearch && matchesCat;
       });
@@ -675,7 +513,6 @@
       toast.classList.add('show-toast');
     }
 
-    // STUDENT PORTAL: TRACK REQUESTS & RETURN ITEM BUTTON
     function loadUserRequests() {
       const currentUser = JSON.parse(localStorage.getItem('currentUser'));
       const requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
@@ -710,7 +547,6 @@
       }).join('') + `</ul>`;
     }
 
-    // STUDENT MARKS ITEM AS RETURNED
     function returnItem(index) {
       let requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
       requests[index].status = 'Returned Item';
@@ -719,10 +555,65 @@
       loadUserRequests();
     }
 
-    // ADMIN: RENDER ACTIVE REQUESTS
-    function loadAdminRequests() {
-      filterAdminRequests();
+    /* ADMIN INVENTORY MANAGEMENT LOGIC */
+    async function loadLiveInventory() {
+      try {
+        const response = await fetch('/api/equipment');
+        const equipment = await response.json();
+        const tbody = document.getElementById('adminInventoryTable');
+
+        if (equipment.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No equipment found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = equipment.map(item => `
+          <tr>
+            <td class="fw-bold text-dark">${item.name}</td>
+            <td><span class="badge bg-light text-dark border">${item.category}</span></td>
+            <td class="fw-bold">${item.stock} units</td>
+            <td>
+              <span class="badge ${item.stock > 0 ? 'bg-success' : 'bg-secondary'}">
+                ${item.stock > 0 ? 'Available' : 'Unavailable'}
+              </span>
+            </td>
+            <td>
+              <div class="input-group input-group-sm" style="max-width: 160px;">
+                <input type="number" min="0" class="form-control" id="stockInput_${item.id}" value="${item.stock}">
+                <button class="btn btn-primary fw-semibold" onclick="updateStock(${item.id})">Save</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        showCustomToast('Failed to load live inventory.');
+      }
     }
+
+    async function updateStock(equipmentId) {
+      const newStock = parseInt(document.getElementById(`stockInput_${equipmentId}`).value, 10);
+      try {
+        const response = await fetch(`/api/equipment/${equipmentId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stock: newStock })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          showCustomToast(data.error || 'Update failed.');
+          return;
+        }
+
+        showCustomToast('Stock updated successfully!');
+        loadLiveInventory();
+      } catch (err) {
+        showCustomToast('Error updating stock.');
+      }
+    }
+
+    /* ADMIN REQUESTS & HISTORY */
+    function loadAdminRequests() { filterAdminRequests(); }
 
     function filterAdminRequests() {
       const query = document.getElementById('requestsSearchInput') ? document.getElementById('requestsSearchInput').value.toLowerCase().trim() : '';
@@ -766,7 +657,6 @@
       filterAdminRequests();
     }
 
-    // ADMIN: ENTIRE BORROWING HISTORY LOGS
     function filterAdminHistory() {
       const query = document.getElementById('historySearchInput') ? document.getElementById('historySearchInput').value.toLowerCase().trim() : '';
       const requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
@@ -790,24 +680,19 @@
           <td>${req.id}</td>
           <td>${req.item}</td>
           <td>${req.date}</td>
-          <td><span class="badge ${req.status === 'Returned Item' ? 'bg-secondary' : req.status === 'Approved' ? 'bg-success' : req.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${req.status}</span></td>
+          <td><span class="badge ${req.status === 'Approved' ? 'bg-success' : req.status === 'Returned Item' ? 'bg-secondary' : req.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${req.status}</span></td>
         </tr>
       `).join('');
     }
 
-    // FETCH REGISTERED USERS
+    /* ADMIN USER MANAGEMENT */
     async function fetchRegisteredUsers() {
-      const tableBody = document.getElementById('adminUsersTable');
-      tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">Loading users from database...</td></tr>`;
-
       try {
         const response = await fetch('/api/users');
         cachedUsersList = await response.json();
         filterRegisteredUsers();
-
       } catch (err) {
-        console.error('Error fetching users:', err);
-        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">Failed to load user list from server.</td></tr>`;
+        showCustomToast('Failed to fetch user accounts.');
       }
     }
 
@@ -817,13 +702,12 @@
 
       const filtered = cachedUsersList.filter(u => 
         u.full_name.toLowerCase().includes(query) || 
-        u.student_id.toLowerCase().includes(query) || 
-        (u.email && u.email.toLowerCase().includes(query)) ||
-        u.role.toLowerCase().includes(query)
+        u.student_id.toLowerCase().includes(query) ||
+        (u.email && u.email.toLowerCase().includes(query))
       );
 
       if (filtered.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No matching registered accounts found.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No registered student accounts found.</td></tr>`;
         return;
       }
 
@@ -869,7 +753,6 @@
           fetchRegisteredUsers();
 
         } catch (err) {
-          console.error('Error deleting user:', err);
           showCustomToast('Failed to connect to the server.');
         }
       };
