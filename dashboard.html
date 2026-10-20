@@ -317,22 +317,22 @@
     <div id="view-admin-users" class="dashboard-view d-none">
       <div class="card border-0 shadow-sm p-4 rounded-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold m-0"><i class="fa-solid fa-users-gear text-primary me-2"></i>Student Accounts Directory</h5>
+          <h5 class="fw-bold m-0"><i class="fa-solid fa-users-gear text-primary me-2"></i>Accounts Directory</h5>
           <div class="d-flex align-items-center gap-2">
             <div class="topbar-search" style="max-width: 280px;">
               <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" id="usersSearchInput" class="form-control" placeholder="Search student ID or name..." oninput="filterRegisteredUsers()">
+              <input type="text" id="usersSearchInput" class="form-control" placeholder="Search account ID or name..." oninput="filterRegisteredUsers()">
             </div>
             <button class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-3" onclick="fetchRegisteredUsers()"><i class="fa-solid fa-rotate me-1"></i> Refresh</button>
           </div>
         </div>
-        <p class="text-secondary mb-4">View all registered student accounts and delete unnecessary test profiles on the fly.</p>
+        <p class="text-secondary mb-4">Administrator accounts are listed separately above student accounts. Admin login IDs are usernames; student login IDs are student IDs.</p>
         <div class="table-responsive">
           <table class="table table-hover align-middle">
             <thead class="table-light">
               <tr>
                 <th>Official Name</th>
-                <th>Student ID</th>
+                <th>Login ID</th>
                 <th>Email Address</th>
                 <th>System Role</th>
                 <th>Actions</th>
@@ -352,6 +352,7 @@
     let dbEquipmentList = [];
     let selectedCategory = 'All';
     let cachedUsersList = [];
+    let currentUser = null;
 
     async function fetchLiveEquipment() {
       try {
@@ -363,15 +364,22 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-      if (!currentUser) {
-        showCustomToast('Please log in first!');
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch('/api/me');
+        if (!response.ok) {
+          window.location.href = 'index.html';
+          return;
+        }
+        const data = await response.json();
+        currentUser = data.user;
+      } catch (err) {
+        console.error('Failed to validate login session:', err);
         window.location.href = 'index.html';
         return;
       }
 
-      const isAdmin = currentUser.studentId.toLowerCase() === 'admin' || currentUser.role === 'admin';
+      const isAdmin = currentUser.role === 'admin';
 
       const greetingMsg = sessionStorage.getItem('loginGreeting');
       if (greetingMsg) {
@@ -387,6 +395,7 @@
       }
 
       if (isAdmin) {
+        sessionStorage.removeItem('pendingEquipmentId');
         document.getElementById('sidebarRoleLabel').innerText = 'Administrator Portal';
         document.querySelectorAll('.student-only').forEach(el => el.classList.add('d-none'));
         document.getElementById('adminRequestsMenu').classList.remove('d-none');
@@ -400,6 +409,11 @@
         document.getElementById('profileId').innerText = currentUser.studentId;
         fetchLiveEquipment();
         loadUserRequests();
+        const pendingEquipmentId = Number(sessionStorage.getItem('pendingEquipmentId'));
+        sessionStorage.removeItem('pendingEquipmentId');
+        if (Number.isSafeInteger(pendingEquipmentId) && pendingEquipmentId > 0) {
+          borrowItem(pendingEquipmentId);
+        }
       }
     });
 
@@ -419,7 +433,7 @@
         'admin-requests': 'Active Borrow Requests',
         'admin-inventory': 'Manage Lab Inventory',
         'admin-history': 'Entire Borrowing History Logs',
-        'admin-users': 'Student Accounts Directory'
+        'admin-users': 'Accounts Directory'
       };
       document.getElementById('pageTitle').innerText = titles[viewName];
       document.getElementById('searchWrapper').style.display = (viewName === 'browse') ? 'block' : 'none';
@@ -450,8 +464,7 @@
 
         if (item.stock > 0) {
           statusBadge = `<span class="status-pill text-success"><i class="fa-solid fa-circle me-1"></i>Available (${item.stock} left)</span>`;
-          let safeName = item.name.replace(/'/g, "\\'");
-          actionBtn = `<button class="btn btn-borrow-sm" onclick="borrowItem('${safeName}')">Borrow</button>`;
+          actionBtn = `<button class="btn btn-borrow-sm" onclick="borrowItem(${item.id})">Borrow</button>`;
         } else {
           statusBadge = '<span class="status-pill text-secondary"><i class="fa-solid fa-circle me-1"></i>Unavailable</span>';
           actionBtn = '<button class="btn btn-secondary btn-sm" disabled style="font-size:0.8rem">Unavailable</button>';
@@ -494,15 +507,24 @@
       filterDashboardEquipment();
     }
 
-    function borrowItem(itemName) {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-      let requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
-      
-      requests.push({ student: currentUser.fullName, id: currentUser.studentId, item: itemName, date: new Date().toLocaleDateString(), status: 'Pending Approval' });
-      localStorage.setItem('labconnect_requests', JSON.stringify(requests));
-
-      showCustomToast(`Borrow request sent for "${itemName}"! Check 'Track Requests' for status.`);
-      loadUserRequests();
+    async function borrowItem(equipmentId) {
+      try {
+        const response = await fetch('/api/requests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ equipmentId })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          showCustomToast(data.error || 'Could not submit borrowing request.');
+          return;
+        }
+        showCustomToast(data.message);
+        loadUserRequests();
+      } catch (err) {
+        console.error('Failed to submit borrowing request:', err);
+        showCustomToast('Could not connect to the server to submit your request.');
+      }
     }
 
     function showCustomToast(message) {
@@ -513,46 +535,60 @@
       toast.classList.add('show-toast');
     }
 
-    function loadUserRequests() {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-      const requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
-      const userRequests = requests.filter(r => r.id === currentUser.studentId);
+    async function loadUserRequests() {
       const container = document.getElementById('requestsListContainer');
+      try {
+        const response = await fetch('/api/requests');
+        const requests = await response.json();
+        if (!response.ok) {
+          throw new Error(requests.error || 'Failed to retrieve your requests.');
+        }
+        document.getElementById('profileBorrowCount').innerText =
+          requests.filter(request => request.status === 'Approved' || request.status === 'Returned Item').length;
 
-      document.getElementById('profileBorrowCount').innerText = userRequests.filter(r => r.status === 'Approved' || r.status === 'Returned Item').length;
-
-      if (userRequests.length === 0) {
-        container.innerHTML = `<p class="text-muted">You have no active equipment requests yet. Browse equipment and click 'Borrow' to submit one!</p>`;
-        return;
-      }
-
-      container.innerHTML = `<ul class="list-group">` + requests.map((r, index) => {
-        if (r.id !== currentUser.studentId) return '';
-
-        let actionArea = `<span class="badge ${r.status === 'Approved' ? 'bg-success' : r.status === 'Returned Item' ? 'bg-secondary' : r.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${r.status}</span>`;
-
-        if (r.status === 'Approved') {
-          actionArea += ` <button class="btn btn-outline-primary btn-sm fw-bold ms-2" onclick="returnItem(${index})"><i class="fa-solid fa-arrow-rotate-left me-1"></i> Return Item</button>`;
+        if (requests.length === 0) {
+          container.innerHTML = `<p class="text-muted">You have no equipment requests yet. Browse equipment and click 'Borrow' to submit one!</p>`;
+          return;
         }
 
-        return `
-          <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-            <div>
-              <strong>${r.item}</strong><br>
-              <small class="text-muted">Requested on: ${r.date}</small>
-            </div>
-            <div>${actionArea}</div>
-          </li>
-        `;
-      }).join('') + `</ul>`;
+        container.innerHTML = `<ul class="list-group">` + requests.map(request => {
+          let actionArea = `<span class="badge ${request.status === 'Approved' ? 'bg-success' : request.status === 'Returned Item' ? 'bg-secondary' : request.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${request.status}</span>`;
+
+          if (request.status === 'Approved') {
+            actionArea += ` <button class="btn btn-outline-primary btn-sm fw-bold ms-2" onclick="returnItem(${request.requestId})"><i class="fa-solid fa-arrow-rotate-left me-1"></i> Return Item</button>`;
+          }
+
+          return `
+            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+              <div>
+                <strong>${request.item}</strong><br>
+                <small class="text-muted">Requested on: ${new Date(request.date).toLocaleString()}</small>
+              </div>
+              <div>${actionArea}</div>
+            </li>
+          `;
+        }).join('') + `</ul>`;
+      } catch (err) {
+        console.error('Failed to load borrowing requests:', err);
+        container.innerHTML = `<p class="text-danger">Could not load your requests. Please try again.</p>`;
+      }
     }
 
-    function returnItem(index) {
-      let requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
-      requests[index].status = 'Returned Item';
-      localStorage.setItem('labconnect_requests', JSON.stringify(requests));
-      showCustomToast(`Item marked as returned! Thank you.`);
-      loadUserRequests();
+    async function returnItem(requestId) {
+      try {
+        const response = await fetch(`/api/requests/${requestId}/return`, { method: 'POST' });
+        const data = await response.json();
+        if (!response.ok) {
+          showCustomToast(data.error || 'Could not return this item.');
+          return;
+        }
+        showCustomToast(data.message);
+        loadUserRequests();
+        fetchLiveEquipment();
+      } catch (err) {
+        console.error('Failed to return equipment:', err);
+        showCustomToast('Could not connect to the server to return this item.');
+      }
     }
 
     /* ADMIN INVENTORY MANAGEMENT LOGIC */
@@ -615,74 +651,102 @@
     /* ADMIN REQUESTS & HISTORY */
     function loadAdminRequests() { filterAdminRequests(); }
 
-    function filterAdminRequests() {
+    async function filterAdminRequests() {
       const query = document.getElementById('requestsSearchInput') ? document.getElementById('requestsSearchInput').value.toLowerCase().trim() : '';
-      const requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
       const tableBody = document.getElementById('adminRequestsTable');
+      try {
+        const response = await fetch('/api/requests');
+        const requests = await response.json();
+        if (!response.ok) throw new Error(requests.error || 'Failed to retrieve requests.');
 
-      const filtered = requests.filter(req => 
-        req.student.toLowerCase().includes(query) || 
-        req.id.toLowerCase().includes(query) || 
-        req.item.toLowerCase().includes(query)
-      );
+        const filtered = requests.filter(request => {
+          const matches = request.student.toLowerCase().includes(query) ||
+            request.id.toLowerCase().includes(query) ||
+            request.item.toLowerCase().includes(query);
+          return matches && (request.status === 'Pending Approval' || request.status === 'Approved');
+        });
 
-      if (filtered.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No active student requests found.</td></tr>`;
-        return;
+        if (filtered.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">No active student requests found.</td></tr>`;
+          return;
+        }
+
+        tableBody.innerHTML = filtered.map(request => `
+          <tr>
+            <td class="fw-bold text-dark">${request.student}</td>
+            <td>${request.id}</td>
+            <td>${request.item}</td>
+            <td>${new Date(request.date).toLocaleString()}</td>
+            <td><span class="badge ${request.status === 'Approved' ? 'bg-success' : 'bg-warning text-dark'}">${request.status}</span></td>
+            <td>
+              ${request.status === 'Pending Approval' ? `
+                <button class="btn btn-success btn-sm fw-bold me-1" onclick="updateRequestStatus(${request.requestId}, 'Approved')">Approve</button>
+                <button class="btn btn-danger btn-sm fw-bold" onclick="updateRequestStatus(${request.requestId}, 'Rejected')">Reject</button>
+              ` : ''}
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load active requests:', err);
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Could not load requests.</td></tr>`;
       }
-
-      tableBody.innerHTML = filtered.map((req, index) => `
-        <tr>
-          <td class="fw-bold text-dark">${req.student}</td>
-          <td>${req.id}</td>
-          <td>${req.item}</td>
-          <td>${req.date}</td>
-          <td><span class="badge ${req.status === 'Approved' ? 'bg-success' : req.status === 'Returned Item' ? 'bg-secondary' : req.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${req.status}</span></td>
-          <td>
-            ${req.status === 'Pending Approval' ? `
-              <button class="btn btn-success btn-sm fw-bold me-1" onclick="updateRequestStatus(${index}, 'Approved')">Approve</button>
-              <button class="btn btn-danger btn-sm fw-bold" onclick="updateRequestStatus(${index}, 'Rejected')">Reject</button>
-            ` : `
-              <button class="btn btn-outline-secondary btn-sm" onclick="updateRequestStatus(${index}, 'Pending Approval')">Reset</button>
-            `}
-          </td>
-        </tr>
-      `).join('');
     }
 
-    function updateRequestStatus(index, newStatus) {
-      let requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
-      requests[index].status = newStatus;
-      localStorage.setItem('labconnect_requests', JSON.stringify(requests));
-      filterAdminRequests();
+    async function updateRequestStatus(requestId, newStatus) {
+      try {
+        const response = await fetch(`/api/requests/${requestId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          showCustomToast(data.error || 'Could not update request.');
+          return;
+        }
+        showCustomToast(data.message);
+        filterAdminRequests();
+        filterAdminHistory();
+        loadLiveInventory();
+      } catch (err) {
+        console.error('Failed to update borrowing request:', err);
+        showCustomToast('Could not connect to the server to update request.');
+      }
     }
 
-    function filterAdminHistory() {
+    async function filterAdminHistory() {
       const query = document.getElementById('historySearchInput') ? document.getElementById('historySearchInput').value.toLowerCase().trim() : '';
-      const requests = JSON.parse(localStorage.getItem('labconnect_requests')) || [];
       const tableBody = document.getElementById('adminHistoryTable');
+      try {
+        const response = await fetch('/api/requests');
+        const requests = await response.json();
+        if (!response.ok) throw new Error(requests.error || 'Failed to retrieve history.');
 
-      const filtered = requests.filter(req => 
-        req.student.toLowerCase().includes(query) || 
-        req.id.toLowerCase().includes(query) || 
-        req.item.toLowerCase().includes(query) ||
-        req.status.toLowerCase().includes(query)
-      );
+        const filtered = requests.filter(request =>
+          request.student.toLowerCase().includes(query) ||
+          request.id.toLowerCase().includes(query) ||
+          request.item.toLowerCase().includes(query) ||
+          request.status.toLowerCase().includes(query)
+        );
 
-      if (filtered.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No borrowing history logs found.</td></tr>`;
-        return;
+        if (filtered.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No borrowing history logs found.</td></tr>`;
+          return;
+        }
+
+        tableBody.innerHTML = filtered.map(request => `
+          <tr>
+            <td class="fw-bold text-dark">${request.student}</td>
+            <td>${request.id}</td>
+            <td>${request.item}</td>
+            <td>${new Date(request.date).toLocaleString()}</td>
+            <td><span class="badge ${request.status === 'Approved' ? 'bg-success' : request.status === 'Returned Item' ? 'bg-secondary' : request.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${request.status}</span></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load borrowing history:', err);
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Could not load borrowing history.</td></tr>`;
       }
-
-      tableBody.innerHTML = filtered.map(req => `
-        <tr>
-          <td class="fw-bold text-dark">${req.student}</td>
-          <td>${req.id}</td>
-          <td>${req.item}</td>
-          <td>${req.date}</td>
-          <td><span class="badge ${req.status === 'Approved' ? 'bg-success' : req.status === 'Returned Item' ? 'bg-secondary' : req.status === 'Rejected' ? 'bg-danger' : 'bg-warning text-dark'}">${req.status}</span></td>
-        </tr>
-      `).join('');
     }
 
     /* ADMIN USER MANAGEMENT */
@@ -707,39 +771,57 @@
       );
 
       if (filtered.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No registered student accounts found.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No matching accounts found.</td></tr>`;
         return;
       }
 
-      tableBody.innerHTML = filtered.map(u => `
-        <tr>
-          <td class="fw-bold text-dark">${u.full_name}</td>
-          <td><span class="badge bg-light text-dark border">${u.student_id}</span></td>
-          <td>${u.email || '<span class="text-muted small">N/A</span>'}</td>
-          <td><span class="badge ${u.role === 'admin' ? 'bg-danger' : 'bg-primary'}">${u.role.toUpperCase()}</span></td>
-          <td>
-            ${u.role === 'admin' ? `
-              <button class="btn btn-secondary btn-sm" disabled style="font-size:0.75rem">Protected</button>
-            ` : `
-              <button class="btn btn-outline-danger btn-sm fw-semibold" onclick="confirmDeleteUser(${u.id}, '${u.full_name.replace(/'/g, "\\'")}')">
-                <i class="fa-solid fa-trash me-1"></i> Delete
-              </button>
-            `}
-          </td>
-        </tr>
-      `).join('');
+      const admins = filtered.filter(user => user.role === 'admin');
+      const students = filtered.filter(user => user.role !== 'admin');
+      const renderGroup = (label, users, role) => {
+        if (users.length === 0) return '';
+        return `
+          <tr class="table-light">
+            <th colspan="5" scope="rowgroup" class="text-uppercase small text-secondary py-2">
+              ${label} <span class="badge bg-secondary-subtle text-secondary-emphasis ms-1">${users.length}</span>
+            </th>
+          </tr>
+          ${users.map(user => `
+            <tr>
+              <td class="fw-bold text-dark">${user.full_name}</td>
+              <td><span class="badge bg-light text-dark border">${user.student_id}</span></td>
+              <td>${user.email || '<span class="text-muted small">N/A</span>'}</td>
+              <td><span class="badge ${role === 'admin' ? 'bg-danger' : 'bg-primary'}">${role.toUpperCase()}</span></td>
+              <td>
+                ${role === 'admin'
+                  ? '<button class="btn btn-secondary btn-sm" disabled style="font-size:0.75rem">Protected</button>'
+                  : `<button class="btn btn-outline-danger btn-sm fw-semibold" onclick="confirmDeleteUser('${user.student_id}', '${user.full_name.replace(/'/g, "\\'")}')">
+                      <i class="fa-solid fa-trash me-1"></i> Delete
+                    </button>`
+                }
+              </td>
+            </tr>
+          `).join('')}
+        `;
+      };
+
+      tableBody.innerHTML = renderGroup('Administrators', admins, 'admin') +
+        renderGroup('Students', students, 'student');
     }
 
-    function confirmDeleteUser(userId, userName) {
+    function confirmDeleteUser(studentId, userName) {
       const modalEl = document.getElementById('confirmModal');
       const modalInstance = new bootstrap.Modal(modalEl);
       
-      document.getElementById('confirmModalMessage').innerText = `Are you sure you want to permanently delete the account for "${userName}"?`;
+      document.getElementById('confirmModalMessage').innerText = `Are you sure you want to permanently delete the account for "${userName}"? Their borrowing request records will remain in the history.`;
       
       const yesBtn = document.getElementById('confirmModalYesBtn');
       yesBtn.onclick = async function() {
         try {
-          const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+          // Find user's database ID from cached list
+          const targetUser = cachedUsersList.find(u => u.student_id === studentId);
+          if (!targetUser) return;
+
+          const response = await fetch(`/api/users/${targetUser.id}`, { method: 'DELETE' });
           const data = await response.json();
 
           modalInstance.hide();
@@ -749,7 +831,7 @@
             return;
           }
 
-          showCustomToast(`Account for "${userName}" deleted successfully.`);
+          showCustomToast(`Account for "${userName}" deleted. Borrowing records remain in history.`);
           fetchRegisteredUsers();
 
         } catch (err) {
@@ -767,8 +849,12 @@
       document.getElementById('confirmModalMessage').innerText = 'Are you sure you want to log out?';
       
       const yesBtn = document.getElementById('confirmModalYesBtn');
-      yesBtn.onclick = function() {
-        localStorage.removeItem('currentUser');
+      yesBtn.onclick = async function() {
+        try {
+          await fetch('/api/logout', { method: 'POST' });
+        } catch (err) {
+          console.error('Failed to end login session:', err);
+        }
         window.location.href = 'index.html';
       };
 

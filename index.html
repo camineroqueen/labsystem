@@ -323,6 +323,7 @@
     let currentAuthMode = 'login';
     let selectedRole = 'student';
     let activeCategory = null;
+    let signedInUser = null;
 
     async function loadLiveEquipment() {
       try {
@@ -339,8 +340,7 @@
 
       if (item.stock > 0) {
         statusBadge = `<span class="status-pill text-success"><i class="fa-solid fa-circle me-1"></i>Available (${item.stock} left)</span>`;
-        let safeName = item.name.replace(/'/g, "\\'");
-        actionBtn = `<button class="btn btn-borrow-sm" onclick="requestBorrow('${safeName}')">Borrow</button>`;
+        actionBtn = `<button class="btn btn-borrow-sm" onclick="requestBorrow(${item.id})">Borrow</button>`;
       } else {
         statusBadge = '<span class="status-pill text-secondary"><i class="fa-solid fa-circle me-1"></i>Unavailable</span>';
         actionBtn = '<button class="btn btn-secondary btn-sm" disabled style="font-size:0.8rem">Unavailable</button>';
@@ -517,7 +517,7 @@
       event.preventDefault();
 
       const studentId = document.getElementById('studentIdInput').value.trim();
-      const password = document.getElementById('passwordInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
       const rawFullName = document.getElementById('fullNameInput').value;
       const email = document.getElementById('emailInput').value.trim().toLowerCase();
 
@@ -525,7 +525,7 @@
       document.getElementById('studentIdError').style.display = 'none';
 
       if (currentAuthMode === 'register') {
-        const validEmailPattern = /^[a-zA-Z0-9._%+-]+@(gmail\.com|[a-zA-Z0-9.-]+\.edu|\.ph)$/;
+        const validEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!validEmailPattern.test(email)) {
           document.getElementById('emailError').style.display = 'block';
           return;
@@ -551,7 +551,7 @@
             return;
           }
 
-          localStorage.setItem('currentUser', JSON.stringify({ fullName, studentId, role: 'student' }));
+          signedInUser = { fullName, studentId, role: 'student' };
           sessionStorage.setItem('loginGreeting', `Welcome to LabConnect, ${fullName}! ✨`);
           window.location.href = 'dashboard.html';
 
@@ -574,7 +574,7 @@
             return;
           }
 
-          localStorage.setItem('currentUser', JSON.stringify(data.user));
+          signedInUser = data.user;
           sessionStorage.setItem('loginGreeting', `Welcome back, ${data.user.fullName}! 🚀`);
           window.location.href = 'dashboard.html';
 
@@ -584,21 +584,30 @@
       }
     }
 
-    function updateLoginUI() {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    async function updateLoginUI() {
       const loginBtn = document.querySelector('.btn-login');
+      try {
+        const response = await fetch('/api/me');
+        if (!response.ok) return;
+        const data = await response.json();
+        signedInUser = data.user;
+      } catch (err) {
+        console.error('Failed to check login session:', err);
+        return;
+      }
 
-      if (currentUser && loginBtn) {
-        loginBtn.innerHTML = `<i class="fa-solid fa-user-check me-2"></i> ${currentUser.fullName}`;
+      if (signedInUser && loginBtn) {
+        loginBtn.innerHTML = '<i class="fa-solid fa-user-check me-2"></i>';
+        loginBtn.appendChild(document.createTextNode(signedInUser.fullName));
         loginBtn.onclick = function() {
           window.location.href = 'dashboard.html';
         };
       }
     }
 
-    function requestBorrow(itemName) {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-      if (!currentUser) {
+    function requestBorrow(equipmentId) {
+      sessionStorage.setItem('pendingEquipmentId', String(equipmentId));
+      if (!signedInUser) {
         showCustomToast('Please log in or create an account first to request equipment!');
         openBorrowModal();
       } else {
